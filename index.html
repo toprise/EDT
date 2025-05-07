@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RSA加密解密工具</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* 动态浅色主题变量（可切换） */
+      --bg-light: #eaf6ff;
+      --header-light: #cfe8fc;
+      --btn-light: #a5d8ff;
+
+      /* 固定粉色主题变量 */
+      --bg-pink: #fff0f5;
+      --header-pink: #ffd3e0;
+      --btn-pink: #ffb0c9;
+
+      /* 深色模式变量 */
+      --bg-dark: #2c2c2e;
+      --header-dark: #3a3a3c;
+      --btn-dark: #5e5e60;
+
+      /* 通用 */
+      --text-light: #333;
+      --text-dark: #f2f2f7;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.3s, color 0.3s;
+      margin: 30px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    /* 主题控制卡片 */
+    .theme-card {
+      width: 800px; background: #fff;
+      border-radius: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      padding: 15px; margin-bottom: 20px;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .theme-card.dark { background: var(--header-dark); }
+
+    .theme-btn {
+      border: none; border-radius: 12px;
+      padding: 10px 20px; font-size: 14px; cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      background: #eee; color: #333;
+    }
+    .theme-card.dark .theme-btn { background: var(--btn-dark); color: var(--text-dark); }
+    .theme-btn.blue.selected { background: var(--btn-light); color: #fff; }
+    .theme-btn.pink.selected { background: var(--btn-pink); color: #fff; }
+
+    /* 主卡片 */
+    .main-card {
+      width: 800px; background: #fff;
+      border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      overflow: hidden; transition: background 0.3s, color 0.3s;
+    }
+    .main-card.dark { background: var(--bg-dark); }
+
+    .tabs {
+      display: flex; background: var(--bg-light);
+    }
+    .tabs.dark { background: var(--header-dark); }
+    .tabs div {
+      flex: 1; text-align: center; padding: 15px;
+      cursor: pointer; font-weight: 500; transition: background 0.3s;
+    }
+    .tabs div.active { background: var(--header-light); }
+    .tabs.dark div.active { background: var(--header-dark); }
+
+    .card-header {
+      text-align: center; background: var(--header-light);
+      padding: 10px; font-size: 20px; font-weight: 500;
+      transition: background 0.3s, color 0.3s;
+    }
+    .card-header.dark { background: var(--header-dark); }
+
+    .card-body {
+      padding: 20px; background: #fff;
+      transition: background 0.3s;
+    }
+    .card-body.dark { background: var(--bg-dark); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-inner { max-width: 350px; margin: 0 auto; }
+
+    label { font-weight: 500; }
+
+    textarea, select, input, button {
+      width: 100%; padding: 12px; margin: 10px 0;
+      border-radius: 12px; border: 1px solid #ccc;
+      font-size: 16px; font-family: inherit;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark textarea,
+    body.dark select,
+    body.dark input {
+      background: #3a3a3c; color: var(--text-dark); border-color: #444;
+    }
+
+    button {
+      background-color: var(--btn-light);
+      color: white; border: none; cursor: pointer;
+    }
+    body.dark button { background-color: var(--btn-dark); }
+    button:hover { opacity: 0.9; }
+    .disabled { background: #eee; cursor: not-allowed; }
+
+    .storage-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .storage-buttons button { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- 主题/夜间卡片 -->
+  <div class="theme-card" id="themeCard">
+    <button class="theme-btn blue selected" onclick="setTheme('blue')">🔵 浅蓝</button>
+    <button class="theme-btn pink" onclick="setTheme('pink')">🌸 淡粉</button>
+    <button class="theme-btn" onclick="toggleDark()">🌓 夜间</button>
+  </div>
+
+  <!-- 主卡片 -->
+  <div class="main-card" id="mainCard">
+    <div class="tabs" id="tabs">
+      <div id="tab-key" class="active" onclick="showSection('key')">密钥管理</div>
+      <div id="tab-encrypt" onclick="showSection('encrypt')">加密</div>
+      <div id="tab-decrypt" onclick="showSection('decrypt')">解密</div>
+    </div>
+    <div class="card-header" id="title">密钥管理</div>
+    <div class="card-body" id="cardBody">
+      <div id="section-key" class="section active">
+        <div class="section-inner">
+          <label>选择密钥长度：</label>
+          <select id="keySize" onchange="onKeySizeChange()">
+            <option value="">-- 请选择 --</option>
+            <option value="512">512</option>
+            <option value="1024">1024</option>
+            <option value="2048">2048</option>
+          </select>
+          <button id="genBtn" class="disabled" onclick="generateKeys()" disabled>生成密钥对</button>
+          <div class="storage-buttons">
+            <button onclick="saveKeys()">💾 保存密钥</button>
+            <button onclick="loadKeys()">📂 加载密钥</button>
+          </div>
+          <label>或 自定义密钥（先选择长度）：</label>
+          <textarea id="publicKey" rows="3" placeholder="粘贴公钥（PEM）"></textarea>
+          <textarea id="privateKey" rows="3" placeholder="粘贴私钥（PEM）"></textarea>
+        </div>
+      </div>
+      <div id="section-encrypt" class="section">
+        <div class="section-inner">
+          <label>待加密内容：</label>
+          <textarea id="plaintext" rows="3"></textarea>
+          <button onclick="encrypt()">🔒 加密</button>
+          <label>加密结果（Base64）：</label>
+          <textarea id="ciphertext" rows="3" readonly></textarea>
+        </div>
+      </div>
+      <div id="section-decrypt" class="section">
+        <div class="section-inner">
+          <label>待解密内容（Base64）：</label>
+          <textarea id="cipherInput" rows="3"></textarea>
+          <button onclick="decrypt()">🔓 解密</button>
+          <label>解密结果：</label>
+          <textarea id="decryptedText" rows="3" readonly></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+  <script>
+    let publicKeyObj, privateKeyObj;
+
+    function showSection(name) {
+      ['key','encrypt','decrypt'].forEach(sec => {
+        document.getElementById('section-'+sec).classList.remove('active');
+        document.getElementById('tab-'+sec).classList.remove('active');
+      });
+      document.getElementById('section-'+name).classList.add('active');
+      document.getElementById('tab-'+name).classList.add('active');
+      document.getElementById('title').textContent = {key:'密钥管理', encrypt:'加密', decrypt:'解密'}[name];
+    }
+
+    function onKeySizeChange() {
+      const sel=document.getElementById('keySize').value;
+      const btn=document.getElementById('genBtn');
+      sel?btn.removeAttribute('disabled'):(btn.setAttribute('disabled',true));
+      sel?btn.classList.remove('disabled'):btn.classList.add('disabled');
+    }
+
+    function generateKeys() {
+      const sz=+document.getElementById('keySize').value;
+      const kp=forge.pki.rsa.generateKeyPair({bits:sz,e:0x10001});
+      publicKeyObj=kp.publicKey; privateKeyObj=kp.privateKey;
+      document.getElementById('publicKey').value=forge.pki.publicKeyToPem(publicKeyObj);
+      document.getElementById('privateKey').value=forge.pki.privateKeyToPem(privateKeyObj);
+    }
+
+    function loadKeysFromInput() {
+      try {
+        const pub=document.getElementById('publicKey').value.trim();
+        const pri=document.getElementById('privateKey').value.trim();
+        if(pub) publicKeyObj=forge.pki.publicKeyFromPem(pub);
+        if(pri) privateKeyObj=forge.pki.privateKeyFromPem(pri);
+      } catch {
+        alert('密钥格式不正确');
+      }
+    }
+
+    function encrypt() {
+      loadKeysFromInput();
+      if(!publicKeyObj){alert('请先生成或输入公钥');return;}
+      const enc=publicKeyObj.encrypt(forge.util.encodeUtf8(document.getElementById('plaintext').value),'RSA-OAEP');
+      document.getElementById('ciphertext').value=forge.util.encode64(enc);
+    }
+
+    function decrypt() {
+      loadKeysFromInput();
+      if(!privateKeyObj){alert('请先生成或输入私钥');return;}
+      try {
+        const dec=privateKeyObj.decrypt(forge.util.decode64(document.getElementById('cipherInput').value),'RSA-OAEP');
+        document.getElementById('decryptedText').value=forge.util.decodeUtf8(dec);
+      } catch {
+        alert('解密失败，请确认输入正确');
+      }
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      document.getElementById('themeCard').classList.toggle('dark');
+      document.getElementById('mainCard').classList.toggle('dark');
+      document.getElementById('tabs').classList.toggle('dark');
+      document.querySelector('.card-header').classList.toggle('dark');
+      document.querySelector('.card-body').classList.toggle('dark');
+    }
+
+    function setTheme(color) {
+      // 先清除选中态
+      document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('selected'));
+      document.querySelector(`.theme-btn.${color}`)?.classList.add('selected');
+      // 更新动态主题变量
+      if(color==='blue') {
+        document.documentElement.style.setProperty('--bg-light','#eaf6ff');
+        document.documentElement.style.setProperty('--header-light','#cfe8fc');
+        document.documentElement.style.setProperty('--btn-light','#a5d8ff');
+      } else {
+        document.documentElement.style.setProperty('--bg-light','var(--bg-pink)');
+        document.documentElement.style.setProperty('--header-light','var(--header-pink)');
+        document.documentElement.style.setProperty('--btn-light','var(--btn-pink)');
+      }
+      // 同步主卡片背景
+      document.querySelector('.tabs').style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-light');
+      document.querySelector('.card-header').style.background = getComputedStyle(document.documentElement).getPropertyValue('--header-light');
+      document.querySelectorAll('button:not(.theme-btn)').forEach(btn=> {
+        btn.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--btn-light');
+      });
+    }
+
+    function saveKeys() {
+      localStorage.setItem('rsa_publicKey',document.getElementById('publicKey').value);
+      localStorage.setItem('rsa_privateKey',document.getElementById('privateKey').value);
+      alert('已保存到本地');
+    }
+    function loadKeys() {
+      const pub=localStorage.getItem('rsa_publicKey');
+      const pri=localStorage.getItem('rsa_privateKey');
+      if(pub||pri) {
+        document.getElementById('publicKey').value=pub||'';
+        document.getElementById('privateKey').value=pri||'';
+        alert('已从本地加载');
+      } else {
+        alert('本地无密钥记录');
+      }
+    }
+  </script>
+</body>
+</html>
