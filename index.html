@@ -58,7 +58,6 @@
 
     .theme-card {
       display: flex;
-      justify-content: flex-end;
       gap: 10px;
       margin-bottom: 20px;
       padding: 15px;
@@ -67,6 +66,11 @@
 
     .theme-card.dark {
       background: var(--header-dark);
+    }
+
+    .theme-card>* {
+      flex: 1;
+      text-align: center;
     }
 
     .theme-btn,
@@ -93,11 +97,6 @@
     .theme-btn.selected.pink {
       background: var(--btn-pink);
       color: #fff;
-    }
-
-    /* 调整主题卡片内按钮宽度，使其不太长 */
-    .theme-card .theme-btn {
-      width: 50px;
     }
 
     .tabs {
@@ -178,6 +177,7 @@
       color: var(--txt-dark);
       border: 1px solid #555;
     }
+
     body.dark select,
     body.dark input {
       background: #3a3a3c;
@@ -275,7 +275,8 @@
     }
 
     select {
-      appearance: none; /* 移除默认样式 */
+      appearance: none;
+      /* 移除默认样式 */
       background: var(--btn-light);
       color: var(--txt-light);
       padding: 8px 12px;
@@ -315,20 +316,25 @@
     }
 
     /* 修改全局控件样式，实现文本框、下拉、按钮宽度一致且较长 */
-    input, textarea, select, button {
+    input,
+    textarea,
+    select,
+    button {
       width: 100%;
       box-sizing: border-box;
       min-width: 300px;
     }
+
     /* 多行文本域允许垂直调整，不允许水平调整 */
     textarea {
       resize: vertical;
     }
+
     /* 单行输入控件不允许调整尺寸 */
     input {
       resize: none;
     }
-    
+
     /* 保留高级弹窗容器宽度设置 */
     #advancedModal {
       width: 400px;
@@ -466,11 +472,14 @@
       <div id="usageCounter"></div>
     </div>
   </div>
-  
+
   <!-- 新增：弹窗及遮罩层 -->
-  <div id="modalOverlay" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;"></div>
+  <div id="modalOverlay"
+    style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+  </div>
   <!-- 修改：增加宽度到400px -->
-  <div id="advancedModal" style="display:none; position:fixed; left:50%; top:50%; transform: translate(-50%, -50%); width:400px; background:#fff; border-radius:10px; padding:20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index:1001;">
+  <div id="advancedModal"
+    style="display:none; position:fixed; left:50%; top:50%; transform: translate(-50%, -50%); width:400px; background:#fff; border-radius:10px; padding:20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index:1001;">
     <span id="closeModal" style="cursor:pointer; position:absolute; right:10px; top:10px;">×</span>
     <h3>解锁高级功能</h3>
     <label>账户:</label>
@@ -483,7 +492,7 @@
   <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    window.addEventListener("DOMContentLoaded", function() {
+    window.addEventListener("DOMContentLoaded", function () {
       const I18N = { zh: { tabKey: '密钥管理', tabEncrypt: '加密', tabDecrypt: '解密', tabHash: '哈希与 HMAC', tabQR: '二维码生成', tabFile: '文件加密/解密', tabAdvanced: '高级功能', dark: '夜间' }, en: { tabKey: 'Key Mgmt', tabEncrypt: 'Encrypt', tabDecrypt: 'Decrypt', tabHash: 'Hash & HMAC', tabQR: 'QR Code', tabFile: 'File Enc/Dec', tabAdvanced: 'Advanced', dark: 'Dark' } };
       let lang = 'zh', rsaPub, rsaPri;
       function setLang(l) { lang = l; document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = I18N[lang][e.getAttribute('data-i18n')]; }); updateHeader(); }
@@ -556,7 +565,7 @@
         const file = fileInput.files[0];
         if (!file) { alert("请选择文件"); return; }
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           const fileData = e.target.result;
           let result = { filename: file.name, algo: algo };
           if (algo === 'RSA-OAEP') {
@@ -602,7 +611,7 @@
         const file = fileInput.files[0];
         if (!file) { alert("请选择文件"); return; }
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           try {
             const obj = JSON.parse(e.target.result);
             // 根据加密算法分支处理
@@ -641,7 +650,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = obj.filename || "decrypted";
             link.click();
-          } catch(e) {
+          } catch (e) {
             alert("解密失败：文件格式错误");
           }
         };
@@ -659,7 +668,7 @@
       }
       function setCookie(name, value, days) {
         const d = new Date();
-        d.setTime(d.getTime() + (days*24*60*60*1000));
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
         document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/";
       }
       function updateUsageUI(val) {
@@ -667,9 +676,9 @@
         usageDiv.textContent = "剩余次数: " + val;
       }
       function checkUsage() {
-        if(getCookie("advancedUnlocked") === "true") return true;
+        if (getCookie("advancedUnlocked") === "true") return true;
         let count = parseInt(getCookie("usageRemaining") || "10");
-        if(count <= 0) {
+        if (count <= 0) {
           alert("使用次数已用完，请解锁高级功能！");
           return false;
         }
@@ -679,17 +688,17 @@
         return true;
       }
       // 初始化使用次数或显示无限制
-      if(getCookie("advancedUnlocked") === "true") {
+      if (getCookie("advancedUnlocked") === "true") {
         updateUsageUI("无限制");
       } else {
-        if(!getCookie("usageRemaining")) {
+        if (!getCookie("usageRemaining")) {
           setCookie("usageRemaining", 10, 7);
           updateUsageUI(10);
         } else {
           updateUsageUI(getCookie("usageRemaining"));
         }
       }
-      
+
       // 弹窗功能
       function showAdvancedModal() {
         document.getElementById("advancedModal").style.display = "block";
@@ -700,10 +709,29 @@
         document.getElementById("modalOverlay").style.display = "none";
       }
       document.getElementById("closeModal").onclick = closeAdvancedModal;
+      function sha512(message) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+        return crypto.subtle.digest("SHA-512", data)
+          .then(buffer => {
+            const hashArray = Array.from(new Uint8Array(buffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+          });
+      }
+
+      // 示例：计算 "hello world" 的 SHA-512 哈希
       function attemptUnlock() {
+        // 如果已经解锁，提示用户已解锁
+        if (document.getElementById("advancedModal").style.display === "none" && document.getElementById("modalOverlay").style.display === "none") {
+          alert("高级功能已解锁！");
+          closeAdvancedModal();
+          return;
+        }
         const acc = document.getElementById("accountInput").value;
         const pwd = document.getElementById("passwordInput").value;
-        if(acc==="admin" && pwd==="123456") {
+        pwd = sha512(pwd);
+        if (acc === "admin" && pwd === "2327c80dbd7faa5e223501ed4537bce095e368953c7fc5a55d1fc439e049ec64dae7e993110019812331a0e58a2edb8078e65f607d5eaf0422a0b015a3f20b2f") {
           setCookie("advancedUnlocked", "true", 7);
           alert("高级功能解锁成功！");
           closeAdvancedModal();
@@ -712,46 +740,46 @@
           alert("账户或密码错误！");
         }
       }
-      
+
       // 修改部分功能操作前先检查使用次数
       const _oldGenRSA = genRSA;
-      genRSA = function() {
-        if(!checkUsage()) return;
+      genRSA = function () {
+        if (!checkUsage()) return;
         _oldGenRSA();
       };
       const _oldDoEncrypt = doEncrypt;
-      doEncrypt = function() {
-        if(!checkUsage()) return;
+      doEncrypt = function () {
+        if (!checkUsage()) return;
         _oldDoEncrypt();
       };
       const _oldDoDecrypt = doDecrypt;
-      doDecrypt = function() {
-        if(!checkUsage()) return;
+      doDecrypt = function () {
+        if (!checkUsage()) return;
         _oldDoDecrypt();
       };
       const _oldGenerateHash = generateHash;
-      generateHash = function() {
-        if(!checkUsage()) return;
+      generateHash = function () {
+        if (!checkUsage()) return;
         _oldGenerateHash();
       };
       const _oldGenerateHMAC = generateHMAC;
-      generateHMAC = function() {
-        if(!checkUsage()) return;
+      generateHMAC = function () {
+        if (!checkUsage()) return;
         _oldGenerateHMAC();
       };
       const _oldGenerateQRCode = generateQRCode;
-      generateQRCode = function() {
-        if(!checkUsage()) return;
+      generateQRCode = function () {
+        if (!checkUsage()) return;
         _oldGenerateQRCode();
       };
       const _oldEncryptFile = encryptFile;
-      encryptFile = function() {
-        if(!checkUsage()) return;
+      encryptFile = function () {
+        if (!checkUsage()) return;
         _oldEncryptFile();
       };
       const _oldDecryptFile = decryptFile;
-      decryptFile = function() {
-        if(!checkUsage()) return;
+      decryptFile = function () {
+        if (!checkUsage()) return;
         _oldDecryptFile();
       };
 
