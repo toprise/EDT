@@ -721,21 +721,27 @@
       }
 
       // 示例：计算 "hello world" 的 SHA-512 哈希
-      function attemptUnlock() {
+      async function attemptUnlock() {
         // 如果已经解锁，提示用户已解锁
-        if (document.getElementById("advancedModal").style.display === "none" && document.getElementById("modalOverlay").style.display === "none") {
+        if (
+          document.getElementById("advancedModal").style.display === "none" &&
+          document.getElementById("modalOverlay").style.display === "none"
+        ) {
           alert("高级功能已解锁！");
           closeAdvancedModal();
           return;
         }
         const acc = document.getElementById("accountInput").value;
         const pwd = document.getElementById("passwordInput").value;
-        pwd = sha512(pwd);
-        if (acc === "admin" && pwd === "2327c80dbd7faa5e223501ed4537bce095e368953c7fc5a55d1fc439e049ec64dae7e993110019812331a0e58a2edb8078e65f607d5eaf0422a0b015a3f20b2f") {
+        const hashedPwd = await sha512(pwd); // 获取 SHA-512 哈希值
+        // 请将下面 "预设哈希值" 替换为你预先计算好的哈希结果
+        const presetHash = "在此处输入你的哈希值";
+        if (acc === "admin" && hashedPwd === presetHash) {
           setCookie("advancedUnlocked", "true", 7);
           alert("高级功能解锁成功！");
           closeAdvancedModal();
           updateUsageUI("无限制");
+          document.getElementById("unlockBtn").textContent = "已解锁";
         } else {
           alert("账户或密码错误！");
         }
