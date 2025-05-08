@@ -735,7 +735,7 @@
         const pwd = document.getElementById("passwordInput").value;
         const hashedPwd = await sha512(pwd); // 获取 SHA-512 哈希值
         // 请将下面 "预设哈希值" 替换为你预先计算好的哈希结果
-        const presetHash = "在此处输入你的哈希值";
+        const presetHash = "2327c80dbd7faa5e223501ed4537bce095e368953c7fc5a55d1fc439e049ec64dae7e993110019812331a0e58a2edb8078e65f607d5eaf0422a0b015a3f20b2f";
         if (acc === "admin" && hashedPwd === presetHash) {
           setCookie("advancedUnlocked", "true", 7);
           alert("高级功能解锁成功！");
