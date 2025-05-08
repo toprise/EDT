@@ -273,18 +273,22 @@
       localStorage.setItem('rsa_pri',document.getElementById('priKey').value);
       alert('已保存密钥');
     }
-    function loadRSA(){
-      const sp=localStorage.getItem('rsa_pub'), si=localStorage.getItem('rsa_pri');
-      const pub=document.getElementById('pubKey'), pri=document.getElementById('priKey');
-      if(sp||si){
-        if(sp) pub.value=sp;
-        if(si) pri.value=si;
-        alert('已从本地加载密钥');
+    function loadRSA() {
+      const sp = localStorage.getItem('rsa_pub'), si = localStorage.getItem('rsa_pri');
+      const pub = document.getElementById('pubKey'), pri = document.getElementById('priKey');
+      if (sp || si) {
+        if (sp) pub.value = sp;
+        if (si) pri.value = si;
+        // 只有在没有密钥时才提示
+        if (!pub.value.trim() && !pri.value.trim()) {
+          alert('无可用密钥');
+        }
         return;
       }
-      if(pub.value.trim()||pri.value.trim()) return;
+      if (pub.value.trim() || pri.value.trim()) return;
       alert('无可用密钥');
     }
+
 
     // 切换加/解密 Pane
     function togglePane(mode){
