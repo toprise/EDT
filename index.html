@@ -43,7 +43,13 @@
     .card-body.dark { background:var(--bg-dark); }
     .section { display:none; } .section.active { display:block; }
     label { display:block; margin-top:10px; font-weight:500; }
-    textarea, select, input, button { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; font-size:14px; transition:background .3s, border .3s; }
+    textarea, select, input, button { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; font-size:14px; transition:background .3s, border .3s, color .3s; }
+    /* 夜间模式下表单控件暗色背景 */
+    body.dark textarea, body.dark select, body.dark input {
+      background: #3a3a3c;
+      color: var(--txt-dark);
+      border: 1px solid #555;
+    } width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; font-size:14px; transition:background .3s, border .3s; }
     button { background:var(--btn-light); color:#fff; border:none; cursor:pointer; } body.dark button { background:var(--btn-dark); } button:hover { opacity:.9; }
     .disabled { background:#eee; cursor:not-allowed; }
     .storage { display:flex; gap:10px; margin-top:10px; } .storage button { flex:1; }
@@ -118,7 +124,7 @@
       <!-- 关于 -->
       <div id="section-about" class="section">
         <div class="about-content">
-          <p>作者：toprise</p><p>版本：v13.0.5</p><p>GitHub：<a href="https://github.com/your-repo" target="_blank">仓库链接</a></p>
+          <p>作者：Your Name</p><p>版本：v1.0.0</p><p>GitHub：<a href="https://github.com/your-repo" target="_blank">仓库链接</a></p>
         </div>
       </div>
     </div>
