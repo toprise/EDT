@@ -6,7 +6,6 @@
   <title>通用加密解密工具</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* 主题变量 */
     :root {
       --bg-blue: #eaf6ff; --header-blue: #cfe8fc; --btn-blue: #a5d8ff;
       --bg-pink: #fff0f5; --header-pink: #ffd3e0; --btn-pink: #ffb0c9;
@@ -14,73 +13,41 @@
       --txt-light: #333; --txt-dark: #f2f2f7;
     }
     body { font-family:'Noto Sans SC',sans-serif; margin:30px; display:flex; flex-direction:column; align-items:center; background:var(--bg-blue); color:var(--txt-light); transition:background .3s, color .3s; }
+    body.pink { background:var(--bg-pink); }
     body.dark { background:var(--bg-dark); color:var(--txt-dark); }
     .card, .theme-card { width:1000px; border-radius:20px; box-shadow:0 8px 20px rgba(0,0,0,0.15); transition:background .3s; }
-    .card { background:#fff; overflow:hidden; } .card.dark { background:var(--bg-dark); }
+    .card { background:#fff; overflow:hidden; } .card.pink { background:#fff; } .card.dark { background:var(--bg-dark); }
     .theme-card { display:flex; justify-content:flex-end; gap:10px; margin-bottom:20px; padding:15px; background:var(--header-blue); }
-    .theme-card.pink { background:var(--header-pink); }
-    .theme-card.dark { background:var(--header-dark); }
-
-    /* 按钮 */
+    .theme-card.pink { background:var(--header-pink); } .theme-card.dark { background:var(--header-dark); }
     .theme-btn { border:none; border-radius:12px; padding:8px 16px; cursor:pointer; background:#eee; transition:background .3s; }
     .theme-btn.blue.selected { background:var(--btn-blue); color:#fff; }
     .theme-btn.pink.selected { background:var(--btn-pink); color:#fff; }
     .theme-btn.dark.selected { background:var(--btn-dark); color:#fff; }
-
-    /* 自定义下拉菜单 */
-    .custom-select {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-      margin-top:5px;
-    }
-    .custom-select select {
-      display: none;
-    }
-    .select-selected {
-      background-color: #eee;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .select-items {
-      position: absolute;
-      background-color: #fff;
-      top: 100%; left: 0;
-      right: 0;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      z-index: 99;
-      display: none;
-    }
-    .select-items div {
-      padding: 10px;
-      cursor: pointer;
-    }
-    .select-items div:hover { background-color: #f1f1f1; }
-
-    /* Tabs */
     .tabs { display:flex; background:var(--header-blue); }
-    .tabs.pink { background:var(--header-pink); }
-    .tabs.dark { background:var(--header-dark); }
-    .tabs div { flex:1; text-align:center; padding:12px; cursor:pointer; white-space:nowrap; }
+    .tabs.pink { background:var(--header-pink); } .tabs.dark { background:var(--header-dark); }
+    .tabs div { flex:1; text-align:center; padding:12px; cursor:pointer; white-space:nowrap; transition:background .3s; }
     .tabs div.active { border-bottom:3px solid #42a5f5; background:#fff; }
-
-    /* 内容区域 */
     .card-header { text-align:center; padding:12px; font-size:20px; font-weight:500; background:var(--header-blue); }
-    .card-header.pink { background:var(--header-pink); }
-    .card-header.dark { background:var(--header-dark); }
-    .card-body { padding:20px; }
+    .card-header.pink { background:var(--header-pink); } .card-header.dark { background:var(--header-dark); color:#fff; }
+    .card-body { padding:20px; background:#fff; }
+    .card-body.dark { background:var(--bg-dark); }
     .section { display:none; } .section.active { display:block; }
     label { display:block; margin-top:10px; font-weight:500; }
-    textarea, input[type=password], input[type=text] { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; }
+    textarea, input[type=password], input[type=text] { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc; transition:background .3s, color .3s; }
+    body.dark textarea, body.dark input { background:#3a3a3c; color:var(--txt-dark); border:1px solid #555; }
     button.action { margin-top:10px; padding:10px; border:none; border-radius:8px; cursor:pointer; }
+    .storage { display:flex; gap:10px; margin-top:10px; }
     .storage button { flex:1; }
     #qrCode { margin-top:20px; }
+    /* 自定义下拉 */
+    .custom-select { position:relative; width:100%; }
+    .select-selected { background:#eee; padding:10px; border-radius:8px; cursor:pointer; }
+    .select-items { position:absolute; background:#fff; top:100%; left:0; right:0; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2); display:none; z-index:99; }
+    .select-items div { padding:10px; cursor:pointer; }
+    .select-items div:hover { background:#f1f1f1; }
   </style>
 </head>
-<body>
+<body class="blue">
   <div class="theme-card" id="themeCard">
     <button class="theme-btn blue selected" data-theme="blue">🔵 浅蓝</button>
     <button class="theme-btn pink" data-theme="pink">🌸 淡粉</button>
@@ -91,100 +58,113 @@
       <div data-tab="key" class="active">密钥管理</div>
       <div data-tab="encrypt">加密</div>
       <div data-tab="decrypt">解密</div>
-      <div data-tab="hash">哈希& HMAC</div>
+      <div data-tab="hash">哈希&HMAC</div>
       <div data-tab="qr">二维码</div>
       <div data-tab="file">文件处理</div>
       <div data-tab="about">关于</div>
     </div>
     <div class="card-header" id="header">密钥管理</div>
     <div class="card-body">
+      <!-- 密钥管理 -->
       <div id="section-key" class="section active">
         <label>RSA 密钥长度：</label>
-        <div class="custom-select" id="keySelect">
-          <div class="select-selected">-- 请选择 --</div>
-          <div class="select-items">
-            <div data-value="512">512</div>
-            <div data-value="1024">1024</div>
-            <div data-value="2048">2048</div>
-          </div>
-        </div>
+        <div class="custom-select" id="keySelect"><div class="select-selected">-- 请选择 --</div><div class="select-items"><div data-value="512">512</div><div data-value="1024">1024</div><div data-value="2048">2048</div></div></div>
         <button class="action" id="genBtn" disabled>生成密钥</button>
-        <div class="storage" style="display:flex; gap:10px;">
-          <button class="action" id="saveBtn">保存密钥</button>
-          <button class="action" id="loadBtn">加载密钥</button>
-        </div>
+        <div class="storage"><button class="action" id="saveBtn">保存密钥</button><button class="action" id="loadBtn">加载密钥</button></div>
         <label>公钥：</label><textarea id="pubKey"></textarea>
         <label>私钥：</label><textarea id="priKey"></textarea>
       </div>
+      <!-- 加密 -->
       <div id="section-encrypt" class="section">
         <label>算法：</label>
-        <div class="custom-select" id="algoEncSelect">
-          <div class="select-selected">RSA-OAEP</div>
-          <div class="select-items"><div>RSA-OAEP</div><div>RSAES-PKCS1-V1_5</div><div>AES-CBC</div></div>
-        </div>
-        <div id="rsaEncPane">
-          <label>明文：</label><textarea id="textInEnc"></textarea>
-        </div>
-        <div id="aesEncPane" style="display:none">
-          <label>密码：</label><input type="password" id="aesPwdEnc" />
-          <label>明文：</label><textarea id="textInAESEnc"></textarea>
-        </div>
-        <button class="action" id="encBtn">加密</button>
-        <label>结果：</label><textarea id="textOutEnc" readonly></textarea>
+        <div class="custom-select" id="algoEncSelect"><div class="select-selected">RSA-OAEP</div><div class="select-items"><div>RSA-OAEP</div><div>RSAES-PKCS1-V1_5</div><div>AES-CBC</div></div></div>
+        <div id="rsaEncPane"><label>明文：</label><textarea id="textInEnc"></textarea></div>
+        <div id="aesEncPane" style="display:none"><label>密码：</label><input type="password" id="aesPwdEnc"/><label>明文：</label><textarea id="textInAESEnc"></textarea></div>
+        <button class="action" id="encBtn">加密</button><label>结果：</label><textarea id="textOutEnc" readonly></textarea>
       </div>
-      <!-- 其余板块省略... -->
+      <!-- 解密 -->
+      <div id="section-decrypt" class="section">
+        <label>算法：</label>
+        <div class="custom-select" id="algoDecSelect"><div class="select-selected">RSA-OAEP</div><div class="select-items"><div>RSA-OAEP</div><div>RSAES-PKCS1-V1_5</div><div>AES-CBC</div></div></div>
+        <div id="rsaDecPane"><label>密文(Base64)：</label><textarea id="textInDec"></textarea></div>
+        <div id="aesDecPane" style="display:none"><label>密码：</label><input type="password" id="aesPwdDec"/><label>密文(Base64)：</label><textarea id="textInAESDec"></textarea></div>
+        <button class="action" id="decBtn">解密</button><label>结果：</label><textarea id="textOutDec" readonly></textarea>
+      </div>
+      <!-- 哈希&HMAC -->
+      <div id="section-hash" class="section">
+        <label>哈希算法：</label><div class="custom-select" id="hashSelect"><div class="select-selected">SHA-256</div><div class="select-items"><div>SHA-256</div><div>SHA-512</div><div>MD5</div></div></div>
+        <label>内容：</label><textarea id="hashInput"></textarea><button class="action" id="hashBtn">生成哈希</button><label>哈希值：</label><textarea id="hashOutput" readonly></textarea>
+        <label>HMAC 算法：</label><div class="custom-select" id="hmacSelect"><div class="select-selected">SHA-256</div><div class="select-items"><div>SHA-256</div><div>SHA-512</div><div>MD5</div></div></div>
+        <label>密钥：</label><input type="text" id="hmacKey"/><label>内容：</label><textarea id="hmacInput"></textarea><button class="action" id="hmacBtn">生成 HMAC</button><label>结果：</label><textarea id="hmacOutput" readonly></textarea>
+      </div>
+      <!-- 二维码 -->
+      <div id="section-qr" class="section">
+        <label>文本：</label><textarea id="qrText"></textarea><button class="action" id="qrBtn">生成二维码</button><div id="qrCode"></div>
+      </div>
+      <!-- 文件处理 -->
+      <div id="section-file" class="section">
+        <label>选择文件：</label><input type="file" id="fileInput"/><div class="storage"><button class="action" id="encryptFileBtn" disabled>加密文件</button><button class="action" id="decryptFileBtn" disabled>解密文件</button></div>
+      </div>
+      <!-- 关于 -->
+      <div id="section-about" class="section">
+        <p>作者：Your Name</p><p>版本：v1.0.0</p><p>GitHub：<a href="https://github.com/your-repo" target="_blank">仓库链接</a></p>
+      </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    // 主题切换
+    // 主题切换及独立深色模式处理
     document.querySelectorAll('.theme-btn').forEach(btn=>btn.addEventListener('click',()=>{
       const t=btn.dataset.theme;
-      document.body.className = t==='dark'? 'dark':'';
-      document.documentElement.style.setProperty('--bg-light', t==='blue'? 'var(--bg-blue)': t==='pink'? 'var(--bg-pink)': 'var(--bg-dark)');
-      document.querySelector('.theme-card').className = 'theme-card ' + (t==='pink'? 'pink': t==='dark'? 'dark':'');
-      document.querySelector('.tabs').className = 'tabs ' + (t==='pink'? 'pink': t==='dark'? 'dark':'');
-      document.querySelector('.card-header').className = 'card-header ' + (t==='pink'? 'pink': t==='dark'? 'dark':'');
+      document.body.className = t;
+      // 更新选中状态
+      document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
     }));
-    // 自定义下拉功能
-    function setupSelect(id, callback) {
-      const sel = document.getElementById(id);
-      const head = sel.querySelector('.select-selected');
-      const items = sel.querySelector('.select-items');
-      head.addEventListener('click', ()=>{ items.style.display = items.style.display==='block'? 'none':'block'; });
-      items.querySelectorAll('div').forEach(div=>{
-        div.addEventListener('click', ()=>{
-          head.textContent = div.textContent;
-          items.style.display = 'none';
-          callback(div.dataset.value||div.textContent);
-        });
+    // 选项组件
+    function setupSelect(id, onChange) {
+      const sel=document.getElementById(id);
+      const head=sel.querySelector('.select-selected');
+      const items=sel.querySelector('.select-items');
+      head.onclick=()=>items.style.display=items.style.display==='block'?'none':'block';
+      items.querySelectorAll('div').forEach(div=>div.onclick=()=>{
+        head.textContent=div.textContent;
+        items.style.display='none';
+        onChange(div.dataset.value||div.textContent);
       });
-      document.addEventListener('click', e=>{ if(!sel.contains(e.target)) items.style.display='none'; });
+      document.addEventListener('click',e=>{if(!sel.contains(e.target))items.style.display='none';});
     }
-    // 初始化 RSA 长度下拉
-    setupSelect('keySelect', val=>{
-      document.getElementById('genBtn').disabled = !val;
-      window.selectedKeyLen = val;
-    });
-    // 初始化加密算法下拉
-    setupSelect('algoEncSelect', val=>{
-      document.getElementById('rsaEncPane').style.display = val.startsWith('AES')? 'none':'block';
-      document.getElementById('aesEncPane').style.display = val==='AES-CBC'? 'block':'none';
-      window.selectedAlgoEnc = val;
-    });
-    // 生成 RSA
-    document.getElementById('genBtn').addEventListener('click', ()=>{
-      const bits = parseInt(window.selectedKeyLen);
-      const kp = forge.pki.rsa.generateKeyPair({ bits, e:0x10001 });
-      document.getElementById('pubKey').value = forge.pki.publicKeyToPem(kp.publicKey);
-      document.getElementById('priKey').value = forge.pki.privateKeyToPem(kp.privateKey);
-    });
-    // 生成二维码示例
-    document.getElementById('encBtn').addEventListener('click', ()=>{
-      const text = document.getElementById('textInEnc').value;
-      QRCode.toCanvas(document.getElementById('qrCode'), text, {}, err=>{ if(err) alert('二维码生成失败'); });
-    });
+    // 各功能初始化
+    setupSelect('keySelect',v=>{window.keyLen=v;document.getElementById('genBtn').disabled=!v;});
+    setupSelect('algoEncSelect',v=>{window.algoEnc=v;document.getElementById('rsaEncPane').style.display=v.startsWith('AES')?'none':'block';document.getElementById('aesEncPane').style.display=v==='AES-CBC'?'block':'none';});
+    setupSelect('algoDecSelect',v=>{window.algoDec=v;document.getElementById('rsaDecPane').style.display=v.startsWith('AES')?'none':'block';document.getElementById('aesDecPane').style.display=v==='AES-CBC'?'block':'none';});
+    setupSelect('hashSelect',v=>window.hashAlgo=v);
+    setupSelect('hmacSelect',v=>window.hmacAlgo=v);
+    // RSA 生成
+    document.getElementById('genBtn').onclick=()=>{
+      const kp=forge.pki.rsa.generateKeyPair({bits:parseInt(window.keyLen),e:0x10001});
+      document.getElementById('pubKey').value=forge.pki.publicKeyToPem(kp.publicKey);
+      document.getElementById('priKey').value=forge.pki.privateKeyToPem(kp.privateKey);
+    };
+    // 保存/加载
+    document.getElementById('saveBtn').onclick=()=>{localStorage.setItem('rsa_pub',document.getElementById('pubKey').value);localStorage.setItem('rsa_pri',document.getElementById('priKey').value);alert('已保存');};
+    document.getElementById('loadBtn').onclick=()=>{const sp=localStorage.getItem('rsa_pub'),si=localStorage.getItem('rsa_pri');if(sp||si){if(sp)document.getElementById('pubKey').value=sp;if(si)document.getElementById('priKey').value=si;}else alert('无可用密钥');};
+    // 加密/解密
+    document.getElementById('encBtn').onclick=()=>{
+      let out; if(window.algoEnc==='AES-CBC'){const pwd=document.getElementById('aesPwdEnc').value,salt=forge.random.getBytesSync(16),iv=forge.random.getBytesSync(16),key=forge.pkcs5.pbkdf2(pwd,salt,1000,16),cipher=forge.cipher.createCipher('AES-CBC',key);cipher.start({iv});cipher.update(forge.util.createBuffer(document.getElementById('textInAESEnc').value,'utf8'));cipher.finish();const buf=forge.util.createBuffer();buf.putBytes(salt);buf.putBytes(iv);buf.putBuffer(cipher.output);out=forge.util.encode64(buf.getBytes());} else {const data=forge.util.encodeUtf8(document.getElementById('textInEnc').value);out=forge.util.encode64(forge.pki.publicKeyFromPem(document.getElementById('pubKey').value).encrypt(data,window.algoEnc));}document.getElementById('textOutEnc').value=out;};
+    document.getElementById('decBtn').onclick=()=>{
+      let out; if(window.algoDec==='AES-CBC'){try{const pwd=document.getElementById('aesPwdDec').value,data=forge.util.decode64(document.getElementById('textInAESDec').value),buf=forge.util.createBuffer(data),salt=buf.getBytes(16),iv=buf.getBytes(16),ct=buf.getBytes(buf.length()),key=forge.pkcs5.pbkdf2(pwd,salt,1000,16),dec=forge.cipher.createDecipher('AES-CBC',key);dec.start({iv});dec.update(forge.util.createBuffer(ct));out=dec.finish()?forge.util.decodeUtf8(dec.output.getBytes()):'失败';}catch(e){out='失败';}} else {out=forge.util.decodeUtf8(forge.pki.privateKeyFromPem(document.getElementById('priKey').value).decrypt(forge.util.decode64(document.getElementById('textInDec').value),window.algoDec));}document.getElementById('textOutDec').value=out;};
+    // Hash/HMAC
+    document.getElementById('hashBtn').onclick=()=>{const md=forge.md[window.hashAlgo.toLowerCase().replace('-','')].create();md.update(document.getElementById('hashInput').value,'utf8');document.getElementById('hashOutput').value=md.digest().toHex();};
+    document.getElementById('hmacBtn').onclick=()=>{const hmac=forge.hmac.create().start(window.hmacAlgo.toLowerCase().replace('-',''),document.getElementById('hmacKey').value);hmac.update(document.getElementById('hmacInput').value,'utf8');document.getElementById('hmacOutput').value=hmac.digest().toHex();};
+    // 二维码
+    document.getElementById('qrBtn').onclick=()=>{const txt=document.getElementById('qrText').value.trim();if(!txt) return alert('请输入');document.getElementById('qrCode').innerHTML='';QRCode.toCanvas(document.getElementById('qrCode'),txt,{},err=>{if(err)alert('失败');});};
+    // 文件加解密
+    const fileIn=document.getElementById('fileInput'),encFileBtn=document.getElementById('encryptFileBtn'),decFileBtn=document.getElementById('decryptFileBtn');
+    fileIn.onchange=()=>{const has=document.getElementById('pubKey').value||document.getElementById('priKey').value;encFileBtn.disabled=!has||!fileIn.files.length;decFileBtn.disabled=!has||!fileIn.files.length;};
+    encFileBtn.onclick=()=>{const f=fileIn.files[0],r=new FileReader();r.onload=()=>{const bin=new Uint8Array(r.result),pub=forge.pki.publicKeyFromPem(document.getElementById('pubKey').value),enc=pub.encrypt(bin); const blob=new Blob([new Uint8Array(enc)],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download=f.name+'.enc';a.click();};r.readAsArrayBuffer(f);};
+    decFileBtn.onclick=()=>{const f=fileIn.files[0],r=new FileReader();r.onload=()=>{try{const buf=forge.pki.privateKeyFromPem(document.getElementById('priKey').value).decrypt(new Uint8Array(r.result)); const blob=new Blob([new Uint8Array(buf)],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download=f.name.replace(/\.enc$/,'');a.click();}catch{alert('失败');}};r.readAsArrayBuffer(f);};
   </script>
 </body>
 </html>
