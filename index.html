@@ -95,6 +95,11 @@
       color: #fff;
     }
 
+    /* 调整主题卡片内按钮宽度，使其不太长 */
+    .theme-card .theme-btn {
+      width: 50px;
+    }
+
     .tabs {
       display: flex;
       background: var(--header-light);
@@ -295,6 +300,47 @@
       outline: none;
       border-color: #42a5f5;
     }
+
+    /* 新增：使用次数计数在卡片下方 */
+    #usageCounter {
+      text-align: right;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    /* 新增：限制高级功能弹窗中文本框的宽度 */
+    #advancedModal input {
+      width: 80%;
+      max-width: 300px;
+    }
+
+    /* 修改全局控件样式，实现文本框、下拉、按钮宽度一致且较长 */
+    input, textarea, select, button {
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 300px;
+    }
+    /* 多行文本域允许垂直调整，不允许水平调整 */
+    textarea {
+      resize: vertical;
+    }
+    /* 单行输入控件不允许调整尺寸 */
+    input {
+      resize: none;
+    }
+    
+    /* 保留高级弹窗容器宽度设置 */
+    #advancedModal {
+      width: 400px;
+    }
+
+    /* 恢复主题卡片控件宽度 */
+    .theme-card .theme-btn,
+    .theme-card .lang-select {
+      /* 使用原始内联尺寸，不强制宽度填充 */
+      width: auto;
+      box-sizing: content-box;
+    }
   </style>
 </head>
 
@@ -317,6 +363,7 @@
       <div id="tab-qr" onclick="showSection('qr')" data-i18n="tabQR">二维码生成</div>
       <div id="tab-file" onclick="showSection('file')" data-i18n="tabFile">文件加密/解密</div>
       <div id="tab-about" onclick="showSection('about')">关于</div>
+      <div id="tab-advanced" onclick="showSection('advanced')">高级功能</div>
     </div>
     <div class="card-header" id="header" data-i18n="tabKey">密钥管理</div>
     <div class="card-body" id="body">
@@ -411,19 +458,39 @@
           <p>GitHub：<a href="https://github.com/your-repo" target="_blank">仓库链接</a></p>
         </div>
       </div>
+      <!-- 高级功能 -->
+      <div id="section-advanced" class="section">
+        <button id="unlockBtn" onclick="showAdvancedModal()">解锁高级功能</button>
+      </div>
+      <!-- 在卡片底部显示使用次数 -->
+      <div id="usageCounter"></div>
     </div>
   </div>
+  
+  <!-- 新增：弹窗及遮罩层 -->
+  <div id="modalOverlay" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;"></div>
+  <!-- 修改：增加宽度到400px -->
+  <div id="advancedModal" style="display:none; position:fixed; left:50%; top:50%; transform: translate(-50%, -50%); width:400px; background:#fff; border-radius:10px; padding:20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index:1001;">
+    <span id="closeModal" style="cursor:pointer; position:absolute; right:10px; top:10px;">×</span>
+    <h3>解锁高级功能</h3>
+    <label>账户:</label>
+    <input type="text" id="accountInput" />
+    <label>密码:</label>
+    <input type="password" id="passwordInput" />
+    <button onclick="attemptUnlock()">登录</button>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     window.addEventListener("DOMContentLoaded", function() {
-      const I18N = { zh: { tabKey: '密钥管理', tabEncrypt: '加密', tabDecrypt: '解密', tabHash: '哈希与 HMAC', tabQR: '二维码生成', tabFile: '文件加密/解密', dark: '夜间' }, en: { tabKey: 'Key Mgmt', tabEncrypt: 'Encrypt', tabDecrypt: 'Decrypt', tabHash: 'Hash & HMAC', tabQR: 'QR Code', tabFile: 'File Enc/Dec', dark: 'Dark' } };
+      const I18N = { zh: { tabKey: '密钥管理', tabEncrypt: '加密', tabDecrypt: '解密', tabHash: '哈希与 HMAC', tabQR: '二维码生成', tabFile: '文件加密/解密', tabAdvanced: '高级功能', dark: '夜间' }, en: { tabKey: 'Key Mgmt', tabEncrypt: 'Encrypt', tabDecrypt: 'Decrypt', tabHash: 'Hash & HMAC', tabQR: 'QR Code', tabFile: 'File Enc/Dec', tabAdvanced: 'Advanced', dark: 'Dark' } };
       let lang = 'zh', rsaPub, rsaPri;
       function setLang(l) { lang = l; document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = I18N[lang][e.getAttribute('data-i18n')]; }); updateHeader(); }
       function updateHeader() { const sec = document.querySelector('.tabs .active').id.replace('tab-', ''); document.getElementById('header').textContent = sec === 'about' ? '关于' : I18N[lang]['tab' + sec.charAt(0).toUpperCase() + sec.slice(1)]; }
       function setTheme(c) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); document.querySelector(`.theme-btn.${c}`).classList.add('selected'); const m = { blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'], pink: ['#fff0f5', '#ffd3e0', '#ffb0c9'] }[c]; document.documentElement.style.setProperty('--bg-light', m[0]); document.documentElement.style.setProperty('--header-light', m[1]); document.documentElement.style.setProperty('--btn-light', m[2]); document.querySelector('.tabs').style.background = m[1]; document.querySelector('.card-header').style.background = m[1]; document.querySelectorAll('button:not(.theme-btn)').forEach(b => b.style.backgroundColor = m[2]); }
       function toggleDark() { ['body', 'themeCard', 'mainCard', 'tabs', 'header'].forEach(id => document.getElementById(id)?.classList.toggle('dark')); document.body.classList.toggle('dark'); }
-      function showSection(sec) { ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about'].forEach(s => { document.getElementById('section-' + s).classList.remove('active'); document.getElementById('tab-' + s)?.classList.remove('active'); }); document.getElementById('section-' + sec).classList.add('active'); document.getElementById('tab-' + sec)?.classList.add('active'); updateHeader(); }
+      function showSection(sec) { ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about', 'advanced'].forEach(s => { document.getElementById('section-' + s).classList.remove('active'); document.getElementById('tab-' + s)?.classList.remove('active'); }); document.getElementById('section-' + sec).classList.add('active'); document.getElementById('tab-' + sec)?.classList.add('active'); updateHeader(); }
       function onKeyLen() {
         const ok = !!document.getElementById('keySize').value;
         const genBtn = document.getElementById('genBtn');
@@ -581,12 +648,121 @@
         reader.readAsText(file);
       }
 
+      // 新增：使用次数功能及 Cookie 操作
+      function getCookie(name) {
+        const parts = document.cookie.split("; ");
+        for (let part of parts) {
+          const [key, val] = part.split("=");
+          if (key === name) return decodeURIComponent(val);
+        }
+        return null;
+      }
+      function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days*24*60*60*1000));
+        document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/";
+      }
+      function updateUsageUI(val) {
+        const usageDiv = document.getElementById("usageCounter");
+        usageDiv.textContent = "剩余次数: " + val;
+      }
+      function checkUsage() {
+        if(getCookie("advancedUnlocked") === "true") return true;
+        let count = parseInt(getCookie("usageRemaining") || "10");
+        if(count <= 0) {
+          alert("使用次数已用完，请解锁高级功能！");
+          return false;
+        }
+        count--;
+        setCookie("usageRemaining", count, 7);
+        updateUsageUI(count);
+        return true;
+      }
+      // 初始化使用次数或显示无限制
+      if(getCookie("advancedUnlocked") === "true") {
+        updateUsageUI("无限制");
+      } else {
+        if(!getCookie("usageRemaining")) {
+          setCookie("usageRemaining", 10, 7);
+          updateUsageUI(10);
+        } else {
+          updateUsageUI(getCookie("usageRemaining"));
+        }
+      }
+      
+      // 弹窗功能
+      function showAdvancedModal() {
+        document.getElementById("advancedModal").style.display = "block";
+        document.getElementById("modalOverlay").style.display = "block";
+      }
+      function closeAdvancedModal() {
+        document.getElementById("advancedModal").style.display = "none";
+        document.getElementById("modalOverlay").style.display = "none";
+      }
+      document.getElementById("closeModal").onclick = closeAdvancedModal;
+      function attemptUnlock() {
+        const acc = document.getElementById("accountInput").value;
+        const pwd = document.getElementById("passwordInput").value;
+        if(acc==="admin" && pwd==="123456") {
+          setCookie("advancedUnlocked", "true", 7);
+          alert("高级功能解锁成功！");
+          closeAdvancedModal();
+          updateUsageUI("无限制");
+        } else {
+          alert("账户或密码错误！");
+        }
+      }
+      
+      // 修改部分功能操作前先检查使用次数
+      const _oldGenRSA = genRSA;
+      genRSA = function() {
+        if(!checkUsage()) return;
+        _oldGenRSA();
+      };
+      const _oldDoEncrypt = doEncrypt;
+      doEncrypt = function() {
+        if(!checkUsage()) return;
+        _oldDoEncrypt();
+      };
+      const _oldDoDecrypt = doDecrypt;
+      doDecrypt = function() {
+        if(!checkUsage()) return;
+        _oldDoDecrypt();
+      };
+      const _oldGenerateHash = generateHash;
+      generateHash = function() {
+        if(!checkUsage()) return;
+        _oldGenerateHash();
+      };
+      const _oldGenerateHMAC = generateHMAC;
+      generateHMAC = function() {
+        if(!checkUsage()) return;
+        _oldGenerateHMAC();
+      };
+      const _oldGenerateQRCode = generateQRCode;
+      generateQRCode = function() {
+        if(!checkUsage()) return;
+        _oldGenerateQRCode();
+      };
+      const _oldEncryptFile = encryptFile;
+      encryptFile = function() {
+        if(!checkUsage()) return;
+        _oldEncryptFile();
+      };
+      const _oldDecryptFile = decryptFile;
+      decryptFile = function() {
+        if(!checkUsage()) return;
+        _oldDecryptFile();
+      };
+
       // 暴露函数到全局作用域，供内联事件调用
       Object.assign(window, {
         setLang, setTheme, toggleDark, showSection, onKeyLen,
         genRSA, saveRSA, loadRSA, togglePane,
         doEncrypt, doDecrypt, generateHash, generateHMAC,
-        generateQRCode, encryptFile, decryptFile
+        generateQRCode, encryptFile, decryptFile,
+        showAdvancedModal, closeAdvancedModal, attemptUnlock,
+        getCookie, setCookie, checkUsage, updateUsageUI
       });
     });
   </script>
