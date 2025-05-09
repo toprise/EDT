@@ -347,6 +347,25 @@
       width: auto;
       box-sizing: content-box;
     }
+
+    /* 新增：进度条样式 */
+    #progressContainer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: #ddd;
+      z-index: 1100;
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: #42a5f5;
+      transition: width 0.1s;
+    }
   </style>
 </head>
 
@@ -471,6 +490,11 @@
       <!-- 在卡片底部显示使用次数 -->
       <div id="usageCounter"></div>
     </div>
+  </div>
+
+  <!-- 新增：进度条元素 -->
+  <div id="progressContainer">
+    <div id="progressBar"></div>
   </div>
 
   <!-- 新增：弹窗及遮罩层 -->
@@ -756,38 +780,58 @@
       const _oldDoEncrypt = doEncrypt;
       doEncrypt = function () {
         if (!checkUsage()) return;
-        _oldDoEncrypt();
+        showProgress(_oldDoEncrypt);
       };
       const _oldDoDecrypt = doDecrypt;
       doDecrypt = function () {
         if (!checkUsage()) return;
-        _oldDoDecrypt();
+        showProgress(_oldDoDecrypt);
       };
       const _oldGenerateHash = generateHash;
       generateHash = function () {
         if (!checkUsage()) return;
-        _oldGenerateHash();
+        showProgress(_oldGenerateHash);
       };
       const _oldGenerateHMAC = generateHMAC;
       generateHMAC = function () {
         if (!checkUsage()) return;
-        _oldGenerateHMAC();
+        showProgress(_oldGenerateHMAC);
       };
       const _oldGenerateQRCode = generateQRCode;
       generateQRCode = function () {
         if (!checkUsage()) return;
-        _oldGenerateQRCode();
+        showProgress(_oldGenerateQRCode);
       };
       const _oldEncryptFile = encryptFile;
       encryptFile = function () {
         if (!checkUsage()) return;
-        _oldEncryptFile();
+        showProgress(_oldEncryptFile);
       };
       const _oldDecryptFile = decryptFile;
       decryptFile = function () {
         if (!checkUsage()) return;
-        _oldDecryptFile();
+        showProgress(_oldDecryptFile);
       };
+
+      // 修改进度条控制函数，使用 setInterval 保证进度条显示
+      function showProgress(callback) {
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        progressContainer.style.display = "block";
+        progressBar.style.width = "0%";
+        let percent = 0;
+        const intervalId = setInterval(() => {
+          percent += 10;
+          progressBar.style.width = percent + "%";
+          if (percent >= 100) {
+            clearInterval(intervalId);
+            setTimeout(() => {
+              progressContainer.style.display = "none";
+              callback();
+            }, 100);
+          }
+        }, 100);
+      }
 
       // 暴露函数到全局作用域，供内联事件调用
       Object.assign(window, {
