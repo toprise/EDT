@@ -351,9 +351,7 @@
     /* 新增：进度条样式 */
     #progressContainer {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
+      position: relative; /* 原 fixed 改为 relative */
       width: 100%;
       height: 5px;
       background: #ddd;
@@ -490,11 +488,10 @@
       <!-- 在卡片底部显示使用次数 -->
       <div id="usageCounter"></div>
     </div>
-  </div>
-
-  <!-- 新增：进度条元素 -->
-  <div id="progressContainer">
-    <div id="progressBar"></div>
+    <!-- 新增：将进度条元素放入卡片内部 -->
+    <div id="progressContainer">
+      <div id="progressBar"></div>
+    </div>
   </div>
 
   <!-- 新增：弹窗及遮罩层 -->
@@ -813,7 +810,7 @@
         showProgress(_oldDecryptFile);
       };
 
-      // 修改进度条控制函数，使用 setInterval 保证进度条显示
+      // 修改进度条控制函数：进度条常驻显示并动画流畅
       function showProgress(callback) {
         const progressContainer = document.getElementById("progressContainer");
         const progressBar = document.getElementById("progressBar");
@@ -821,16 +818,14 @@
         progressBar.style.width = "0%";
         let percent = 0;
         const intervalId = setInterval(() => {
-          percent += 10;
+          percent += 5;
           progressBar.style.width = percent + "%";
           if (percent >= 100) {
             clearInterval(intervalId);
-            setTimeout(() => {
-              progressContainer.style.display = "none";
-              callback();
-            }, 100);
+            callback();
+            // 保持进度条显示在100%
           }
-        }, 100);
+        }, 50);
       }
 
       // 暴露函数到全局作用域，供内联事件调用
