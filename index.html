@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>通用加密解密工具</title>
+  <title data-i18n="title">通用加密解密工具</title>
   <!-- 引入中文字体 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -343,8 +343,8 @@
     /* 恢复主题卡片控件宽度 */
     .theme-card .theme-btn,
     .theme-card .lang-select {
-      /* 使用原始内联尺寸，不强制宽度填充 */
-      width: auto;
+      width: auto !important;
+      min-width: 0 !important;
       box-sizing: content-box;
     }
 
@@ -369,9 +369,9 @@
 
 <body>
   <div class="theme-card" id="themeCard">
-    <button class="theme-btn blue selected" onclick="setTheme('blue')">🔵 浅蓝</button>
-    <button class="theme-btn pink" onclick="setTheme('pink')">🌸 淡粉</button>
-    <button class="theme-btn" onclick="toggleDark()">🌓 夜间</button>
+    <button class="theme-btn blue selected" onclick="setTheme('blue')" data-i18n="blue">🔵 浅蓝</button>
+    <button class="theme-btn pink" onclick="setTheme('pink')" data-i18n="pink">🌸 淡粉</button>
+    <button class="theme-btn" onclick="toggleDark()" data-i18n="dark">🌓 夜间</button>
     <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
       <option value="zh">中文</option>
       <option value="en">English</option>
@@ -385,105 +385,137 @@
       <div id="tab-hash" onclick="showSection('hash')" data-i18n="tabHash">哈希与 HMAC</div>
       <div id="tab-qr" onclick="showSection('qr')" data-i18n="tabQR">二维码生成</div>
       <div id="tab-file" onclick="showSection('file')" data-i18n="tabFile">文件加密/解密</div>
-      <div id="tab-about" onclick="showSection('about')">关于</div>
-      <div id="tab-advanced" onclick="showSection('advanced')">高级功能</div>
+      <div id="tab-about" onclick="showSection('about')" data-i18n="tabAbout">关于</div>
+      <div id="tab-advanced" onclick="showSection('advanced')" data-i18n="tabAdvanced">高级功能</div>
     </div>
     <div class="card-header" id="header" data-i18n="tabKey">密钥管理</div>
     <div class="card-body" id="body">
       <!-- 密钥管理 -->
       <div id="section-key" class="section active">
-        <label>选择 RSA 密钥长度：</label>
+        <label data-i18n="selectKeySize">选择 RSA 密钥长度：</label>
         <select id="keySize" onchange="onKeyLen()">
-          <option value="">-- 请选择 --</option>
+          <option value="" data-i18n="pleaseSelect">-- 请选择 --</option>
           <option>512</option>
           <option>1024</option>
           <option>2048</option>
         </select>
-        <button id="genBtn" class="disabled" onclick="genRSA()" disabled>生成密钥对</button>
-        <div class="storage"><button onclick="saveRSA()">💾 保存密钥</button><button onclick="loadRSA()">📂 加载密钥</button>
+        <button id="genBtn" class="disabled" onclick="genRSA()" disabled data-i18n="genKeyPair">生成密钥对</button>
+        <div class="storage">
+          <button onclick="saveRSA()" data-i18n="saveKey">💾 保存密钥</button>
+          <button onclick="loadRSA()" data-i18n="loadKey">📂 加载密钥</button>
         </div>
-        <label>公钥(PEM)</label><textarea id="pubKey"></textarea>
-        <label>私钥(PEM)</label><textarea id="priKey"></textarea>
+        <label data-i18n="publicKey">公钥(PEM)</label>
+        <textarea id="pubKey"></textarea>
+        <label data-i18n="privateKey">私钥(PEM)</label>
+        <textarea id="priKey"></textarea>
       </div>
       <!-- 加密 -->
       <div id="section-encrypt" class="section">
-        <label>算法：</label>
+        <label data-i18n="algorithm">算法：</label>
         <select id="algoEnc" onchange="togglePane('Enc')">
           <option>RSA-OAEP</option>
           <option>RSAES-PKCS1-V1_5</option>
           <option>AES-CBC</option>
         </select>
-        <div id="rsaEncPane"><label>待加密明文：</label><textarea id="textInEnc"></textarea></div>
-        <div id="aesEncPane" style="display:none"><label>密码：</label><input type="password"
-            id="aesPwdEnc" /><label>待加密明文：</label><textarea id="textInAESEnc"></textarea></div>
-        <button onclick="doEncrypt()">加密</button>
-        <label>结果(Base64)：</label><textarea id="textOutEnc" readonly></textarea>
+        <div id="rsaEncPane">
+          <label data-i18n="plainText">待加密明文：</label>
+          <textarea id="textInEnc"></textarea>
+        </div>
+        <div id="aesEncPane" style="display:none">
+          <label data-i18n="password">密码：</label>
+          <input type="password" id="aesPwdEnc" />
+          <label data-i18n="plainText">待加密明文：</label>
+          <textarea id="textInAESEnc"></textarea>
+        </div>
+        <button onclick="doEncrypt()" data-i18n="encrypt">加密</button>
+        <label data-i18n="result">结果(Base64)：</label>
+        <textarea id="textOutEnc" readonly></textarea>
       </div>
       <!-- 解密 -->
       <div id="section-decrypt" class="section">
-        <label>算法：</label>
+        <label data-i18n="algorithm">算法：</label>
         <select id="algoDec" onchange="togglePane('Dec')">
           <option>RSA-OAEP</option>
           <option>RSAES-PKCS1-V1_5</option>
           <option>AES-CBC</option>
         </select>
-        <div id="rsaDecPane"><label>待解密密文(Base64)：</label><textarea id="textInDec"></textarea></div>
-        <div id="aesDecPane" style="display:none"><label>密码：</label><input type="password"
-            id="aesPwdDec" /><label>待解密密文(Base64)：</label><textarea id="textInAESDec"></textarea></div>
-        <button onclick="doDecrypt()">解密</button>
-        <label>解密结果：</label><textarea id="textOutDec" readonly></textarea>
+        <div id="rsaDecPane">
+          <label data-i18n="cipherText">待解密密文(Base64)：</label>
+          <textarea id="textInDec"></textarea>
+        </div>
+        <div id="aesDecPane" style="display:none">
+          <label data-i18n="password">密码：</label>
+          <input type="password" id="aesPwdDec" />
+          <label data-i18n="cipherText">待解密密文(Base64)：</label>
+          <textarea id="textInAESDec"></textarea>
+        </div>
+        <button onclick="doDecrypt()" data-i18n="decrypt">解密</button>
+        <label data-i18n="decryptedResult">解密结果：</label>
+        <textarea id="textOutDec" readonly></textarea>
       </div>
       <!-- 哈希与 HMAC -->
       <div id="section-hash" class="section">
-        <label>选择算法：</label><select id="hashAlgo">
+        <label data-i18n="selectHashAlgorithm">选择算法：</label>
+        <select id="hashAlgo">
           <option>SHA-256</option>
           <option>SHA-512</option>
           <option>MD5</option>
         </select>
-        <label>输入内容：</label><textarea id="hashInput"></textarea><button
-          onclick="generateHash()">生成哈希</button><label>哈希结果：</label><textarea id="hashOutput" readonly></textarea>
-        <label>选择 HMAC 算法：</label><select id="hmacAlgo">
+        <label data-i18n="inputContent">输入内容：</label>
+        <textarea id="hashInput"></textarea>
+        <button onclick="generateHash()" data-i18n="generateHash">生成哈希</button>
+        <label data-i18n="hashResult">哈希结果：</label>
+        <textarea id="hashOutput" readonly></textarea>
+        <label data-i18n="selectHMACAlgorithm">选择 HMAC 算法：</label>
+        <select id="hmacAlgo">
           <option>SHA-256</option>
           <option>SHA-512</option>
           <option>MD5</option>
         </select>
-        <label>密钥：</label><input type="text" id="hmacKey" /><label>输入内容：</label><textarea
-          id="hmacInput"></textarea><button onclick="generateHMAC()">生成 HMAC</button><label>HMAC 结果：</label><textarea
-          id="hmacOutput" readonly></textarea>
+        <label data-i18n="key">密钥：</label>
+        <input type="text" id="hmacKey" />
+        <label data-i18n="inputContent">输入内容：</label>
+        <textarea id="hmacInput"></textarea>
+        <button onclick="generateHMAC()" data-i18n="generateHMAC">生成 HMAC</button>
+        <label data-i18n="hmacResult">HMAC 结果：</label>
+        <textarea id="hmacOutput" readonly></textarea>
       </div>
       <!-- 二维码生成 -->
       <div id="section-qr" class="section">
-        <label>输入文本：</label><textarea id="qrText"></textarea><button onclick="generateQRCode()">生成二维码</button>
+        <label data-i18n="qrInput">输入文本：</label>
+        <textarea id="qrText"></textarea>
+        <button onclick="generateQRCode()" data-i18n="generateQRCode">生成二维码</button>
         <div id="qrCode"></div>
       </div>
       <!-- 文件 -->
       <div id="section-file" class="section">
-        <label>选择文件：</label><input type="file" id="fileInput" />
+        <label data-i18n="selectFile">选择文件：</label>
+        <input type="file" id="fileInput" />
         <!-- 新增：选择加密算法 -->
-        <label>选择加密算法：</label>
+        <label data-i18n="selectEncryptionAlgorithm">选择加密算法：</label>
         <select id="fileAlgo">
           <option value="RSA-OAEP">RSA-OAEP</option>
           <option value="AES-CBC">AES-CBC</option>
         </select>
         <!-- 新增：AES密钥输入，仅在选用AES时显示 -->
         <div id="fileAesKeyContainer" style="display:none">
-          <label>手动输入AES密钥(至少16字符)：</label>
+          <label data-i18n="manualAESKey">手动输入AES密钥(至少16字符)：</label>
           <input type="text" id="fileAesKey" />
         </div>
-        <button id="encryptFileBtn" disabled>加密文件</button>
-        <button id="decryptFileBtn" disabled>解密文件</button>
+        <button id="encryptFileBtn" disabled data-i18n="encryptFile">加密文件</button>
+        <button id="decryptFileBtn" disabled data-i18n="decryptFile">解密文件</button>
       </div>
       <!-- 关于 -->
       <div id="section-about" class="section">
         <div class="about-content">
-          <p>作者：toprise</p>
-          <p>版本：Version 17.8.4</p>
-          <p>GitHub：<a href="https://github.com/toprise/EDT" target="_blank">仓库链接</a></p>
+          <p data-i18n="author">作者：toprise</p>
+          <p data-i18n="version">版本：Version 17.8.4</p>
+          <p>GitHub：<a href="https://github.com/toprise/EDT" target="_blank" data-i18n="github">仓库链接</a></p>
         </div>
       </div>
       <!-- 高级功能 -->
       <div id="section-advanced" class="section">
-        <button id="unlockBtn" onclick="showAdvancedModal()">解锁高级功能</button>
+        <button id="unlockBtn" onclick="showAdvancedModal()" data-i18n="unlockAdvanced">解锁高级功能</button>
       </div>
       <!-- 在卡片底部显示使用次数 -->
       <div id="usageCounter"></div>
@@ -502,24 +534,145 @@
   <div id="advancedModal"
     style="display:none; position:fixed; left:50%; top:50%; transform: translate(-50%, -50%); width:400px; background:#fff; border-radius:10px; padding:20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index:1001;">
     <span id="closeModal" style="cursor:pointer; position:absolute; right:10px; top:10px;">×</span>
-    <h3>解锁高级功能</h3>
-    <label>账户:</label>
+    <h3 data-i18n="advancedTitle">解锁高级功能</h3>
+    <label data-i18n="account">账户:</label>
     <input type="text" id="accountInput" />
-    <label>密码:</label>
+    <label data-i18n="password">密码:</label>
     <input type="password" id="passwordInput" />
-    <button onclick="attemptUnlock()">登录</button>
+    <button onclick="attemptUnlock()" data-i18n="login">登录</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     window.addEventListener("DOMContentLoaded", function () {
-      const I18N = { zh: { tabKey: '密钥管理', tabEncrypt: '加密', tabDecrypt: '解密', tabHash: '哈希与 HMAC', tabQR: '二维码生成', tabFile: '文件加密/解密', tabAdvanced: '高级功能', dark: '夜间' }, en: { tabKey: 'Key Mgmt', tabEncrypt: 'Encrypt', tabDecrypt: 'Decrypt', tabHash: 'Hash & HMAC', tabQR: 'QR Code', tabFile: 'File Enc/Dec', tabAdvanced: 'Advanced', dark: 'Dark' } };
+      const I18N = {
+        zh: {
+          title: "通用加密解密工具",
+          blue: "🔵 浅蓝",
+          pink: "🌸 淡粉",
+          dark: "🌓 夜间",
+          tabKey: "密钥管理",
+          tabEncrypt: "加密",
+          tabDecrypt: "解密",
+          tabHash: "哈希与 HMAC",
+          tabQR: "二维码生成",
+          tabFile: "文件加密/解密",
+          tabAdvanced: "高级功能",
+          tabAbout: "关于",
+          selectKeySize: "选择 RSA 密钥长度：",
+          pleaseSelect: "-- 请选择 --",
+          genKeyPair: "生成密钥对",
+          saveKey: "💾 保存密钥",
+          loadKey: "📂 加载密钥",
+          publicKey: "公钥(PEM)",
+          privateKey: "私钥(PEM)",
+          algorithm: "算法：",
+          plainText: "待加密明文：",
+          encrypt: "加密",
+          result: "结果(Base64)：",
+          cipherText: "待解密密文(Base64)：",
+          decrypt: "解密",
+          decryptedResult: "解密结果：",
+          selectHashAlgorithm: "选择算法：",
+          inputContent: "输入内容：",
+          generateHash: "生成哈希",
+          hashResult: "哈希结果：",
+          selectHMACAlgorithm: "选择 HMAC 算法：",
+          key: "密钥：",
+          generateHMAC: "生成 HMAC",
+          hmacResult: "HMAC 结果：",
+          qrInput: "输入文本：",
+          generateQRCode: "生成二维码",
+          selectFile: "选择文件：",
+          selectEncryptionAlgorithm: "选择加密算法：",
+          manualAESKey: "手动输入AES密钥(至少16字符)：",
+          encryptFile: "加密文件",
+          decryptFile: "解密文件",
+          author: "作者：toprise",
+          version: "版本：Version 17.8.4",
+          github: "仓库链接",
+          unlockAdvanced: "解锁高级功能",
+          advancedTitle: "解锁高级功能",
+          account: "账户：",
+          password: "密码：",
+          login: "登录",
+          usageCounter: "剩余次数:"
+        },
+        en: {
+          title: "Encryption/Decryption Tool",
+          blue: "🔵 Light Blue",
+          pink: "🌸 Light Pink",
+          dark: "🌓 Dark",
+          tabKey: "Key Mgmt",
+          tabEncrypt: "Encrypt",
+          tabDecrypt: "Decrypt",
+          tabHash: "Hash & HMAC",
+          tabQR: "QR Code",
+          tabFile: "File Enc/Dec",
+          tabAdvanced: "Advanced",
+          tabAbout: "About",
+          selectKeySize: "Select RSA Key Size:",
+          pleaseSelect: "-- Please Select --",
+          genKeyPair: "Generate Key Pair",
+          saveKey: "💾 Save Key",
+          loadKey: "📂 Load Key",
+          publicKey: "Public Key (PEM)",
+          privateKey: "Private Key (PEM)",
+          algorithm: "Algorithm:",
+          plainText: "Plaintext:",
+          encrypt: "Encrypt",
+          result: "Result (Base64):",
+          cipherText: "Ciphertext (Base64):",
+          decrypt: "Decrypt",
+          decryptedResult: "Decrypted Result:",
+          selectHashAlgorithm: "Select Algorithm:",
+          inputContent: "Input:",
+          generateHash: "Generate Hash",
+          hashResult: "Hash Result:",
+          selectHMACAlgorithm: "Select HMAC Algorithm:",
+          key: "Key:",
+          generateHMAC: "Generate HMAC",
+          hmacResult: "HMAC Result:",
+          qrInput: "Input Text:",
+          generateQRCode: "Generate QR Code",
+          selectFile: "Select File:",
+          selectEncryptionAlgorithm: "Select Encryption Algorithm:",
+          manualAESKey: "Enter AES Key (at least 16 characters):",
+          encryptFile: "Encrypt File",
+          decryptFile: "Decrypt File",
+          author: "Author: toprise",
+          version: "Version: 17.8.4",
+          github: "GitHub Link",
+          unlockAdvanced: "Unlock Advanced Features",
+          advancedTitle: "Unlock Advanced Features",
+          account: "Account:",
+          password: "Password:",
+          login: "Login",
+          usageCounter: "Remaining Uses:"
+        }
+      };
       let lang = 'zh', rsaPub, rsaPri;
-      function setLang(l) { lang = l; document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = I18N[lang][e.getAttribute('data-i18n')]; }); updateHeader(); }
-      function updateHeader() { const sec = document.querySelector('.tabs .active').id.replace('tab-', ''); document.getElementById('header').textContent = sec === 'about' ? '关于' : I18N[lang]['tab' + sec.charAt(0).toUpperCase() + sec.slice(1)]; }
+      function setLang(l) { 
+        lang = l; 
+        document.querySelectorAll('[data-i18n]').forEach(e => { 
+          e.textContent = I18N[lang][e.getAttribute('data-i18n')]; 
+        }); 
+        updateHeader(); 
+        updateUsageUI(getCookie("advancedUnlocked") === "true" ? "无限制" : getCookie("usageRemaining") || 10);
+      }
+      function updateHeader() { 
+        const sec = document.querySelector('.tabs .active').id.replace('tab-', '');
+        document.getElementById('header').textContent = I18N[lang]['tab' + sec.charAt(0).toUpperCase() + sec.slice(1)];
+      }
+      function updateUsageUI(val) {
+        const usageDiv = document.getElementById("usageCounter");
+        usageDiv.textContent = I18N[lang].usageCounter + " " + val;
+      }
       function setTheme(c) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); document.querySelector(`.theme-btn.${c}`).classList.add('selected'); const m = { blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'], pink: ['#fff0f5', '#ffd3e0', '#ffb0c9'] }[c]; document.documentElement.style.setProperty('--bg-light', m[0]); document.documentElement.style.setProperty('--header-light', m[1]); document.documentElement.style.setProperty('--btn-light', m[2]); document.querySelector('.tabs').style.background = m[1]; document.querySelector('.card-header').style.background = m[1]; document.querySelectorAll('button:not(.theme-btn)').forEach(b => b.style.backgroundColor = m[2]); }
-      function toggleDark() { ['body', 'themeCard', 'mainCard', 'tabs', 'header'].forEach(id => document.getElementById(id)?.classList.toggle('dark')); document.body.classList.toggle('dark'); }
+      function toggleDark() { 
+        ['body', 'themeCard', 'mainCard', 'tabs', 'header'].forEach(id => document.getElementById(id)?.classList.toggle('dark'));
+      }
       function showSection(sec) { ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about', 'advanced'].forEach(s => { document.getElementById('section-' + s).classList.remove('active'); document.getElementById('tab-' + s)?.classList.remove('active'); }); document.getElementById('section-' + sec).classList.add('active'); document.getElementById('tab-' + sec)?.classList.add('active'); updateHeader(); }
       function onKeyLen() {
         const ok = !!document.getElementById('keySize').value;
@@ -691,10 +844,6 @@
         const d = new Date();
         d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
         document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/";
-      }
-      function updateUsageUI(val) {
-        const usageDiv = document.getElementById("usageCounter");
-        usageDiv.textContent = "剩余次数: " + val;
       }
       function checkUsage() {
         if (getCookie("advancedUnlocked") === "true") return true;
