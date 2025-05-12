@@ -597,7 +597,7 @@
           account: "Account:",
           password: "Password:",
           login: "Login",
-          usageCounter: "剩余次数:"
+          usageCounter: "Remaining Uses:"
         },
         en: {
           title: "Encryption/Decryption Tool",
@@ -831,15 +831,13 @@
         reader.readAsText(file);
       }
 
-      // 新增：安全存储Cookie（带签名），防止篡改
+      // 修改：安全存储Cookie（带签名）相关代码保持不变
       const COOKIE_SECRET = "hard-to-guess-secret"; // 请替换为更安全的密钥
-
       function computeSignature(value) {
         const md = forge.md.sha256.create();
         md.update(value + COOKIE_SECRET);
         return md.digest().toHex();
       }
-      
       function setCookie(name, value, days) {
         const signedValue = value + "|" + computeSignature(value);
         const d = new Date();
@@ -847,7 +845,6 @@
         document.cookie = name + "=" + encodeURIComponent(signedValue) +
           ";expires=" + d.toUTCString() + ";path=/";
       }
-      
       function getCookie(name) {
         const parts = document.cookie.split("; ");
         for (let part of parts) {
@@ -862,31 +859,41 @@
         }
         return null;
       }
-
-      // 新增：使用次数功能及 Cookie 操作
+      
+      // 新增：通过 localStorage 保持使用次数，防止 Cookie 被清除后重置
+      function initializeUsage() {
+        let usage = getCookie("usageRemaining");
+        if (usage === null) {
+          let localUsage = localStorage.getItem("usageRemaining");
+          if (localUsage !== null) {
+            usage = localUsage;
+            setCookie("usageRemaining", usage, 7);
+          } else {
+            usage = "10";
+            setCookie("usageRemaining", usage, 7);
+            localStorage.setItem("usageRemaining", usage);
+          }
+        }
+        updateUsageUI(usage);
+      }
+      
       function checkUsage() {
         if (getCookie("advancedUnlocked") === "true") return true;
-        let count = parseInt(getCookie("usageRemaining") || "10");
+        // 优先从cookie，如无则取localStorage
+        let count = parseInt(getCookie("usageRemaining") || localStorage.getItem("usageRemaining") || "10");
         if (count <= 0) {
           alert("使用次数已用完，请解锁高级功能！");
           return false;
         }
         count--;
         setCookie("usageRemaining", count, 7);
+        localStorage.setItem("usageRemaining", count);
         updateUsageUI(count);
         return true;
       }
-      // 初始化使用次数或显示无限制
-      if (getCookie("advancedUnlocked") === "true") {
-        updateUsageUI("无限制");
-      } else {
-        if (!getCookie("usageRemaining")) {
-          setCookie("usageRemaining", 10, 7);
-          updateUsageUI(10);
-        } else {
-          updateUsageUI(getCookie("usageRemaining"));
-        }
-      }
+      
+      // 初始化使用次数（优先使用localStorage保存的值）
+      initializeUsage();
 
       // 弹窗功能
       function showAdvancedModal() {
