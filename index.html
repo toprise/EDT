@@ -4,18 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title data-i18n="title">通用加密解密工具</title>
+  <title>工具页面</title>
   <!-- 引入中文字体 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* 主题色变量定义 */
     :root {
       --bg-light: #eaf6ff;
       --header-light: #cfe8fc;
       --btn-light: #a5d8ff;
-      --bg-pink: #fff0f5;
-      --header-pink: #ffd3e0;
-      --btn-pink: #ffb0c9;
       --bg-dark: #2c2c2e;
       --header-dark: #3a3a3c;
       --btn-dark: #5e5e60;
@@ -34,949 +30,120 @@
       transition: background .3s, color .3s;
     }
 
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--txt-dark);
-    }
-
-    .card,
-    .theme-card {
-      /* 撤销之前的宽度与比例设置，恢复为原来的宽度 */
-      width: 1050px; /* 恢复原宽度 */
-      /* 移除 aspect-ratio 属性 */
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      transition: background .3s;
-      position: relative; /* 新增：使卡片内相对定位 */
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1200px;
+      margin-top: 20px;
     }
 
     .card {
-      width: 1020px;
-      height: 550px;
       background: #fff;
-      overflow: hidden;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      transition: background .3s, box-shadow .3s;
+    }
+
+    .card:hover {
+      background: var(--header-light);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     }
 
     .card.dark {
       background: var(--bg-dark);
+      color: var(--txt-dark);
     }
 
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #777;
+    }
+
+    /* 主题卡片区域 */
     .theme-card {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: var(--header-light);
+      margin: 20px 0;
     }
 
-    .theme-card.dark {
-      background: var(--header-dark);
-    }
-
-    .theme-card>* {
-      flex: 1;
-      text-align: center;
-    }
-
-    .theme-btn,
-    .lang-select {
+    .theme-btn {
       border: none;
       border-radius: 12px;
       padding: 8px 16px;
       cursor: pointer;
-      background: #eee;
+      background: var(--btn-light);
       transition: background .3s, color .3s;
     }
 
-    .theme-card.dark .theme-btn,
-    .theme-card.dark .lang-select {
+    .theme-btn.selected {
       background: var(--btn-dark);
-      color: var(--txt-dark);
-    }
-
-    .theme-btn.selected.blue {
-      background: var(--btn-light);
       color: #fff;
     }
 
-    .theme-btn.selected.pink {
-      background: var(--btn-pink);
-      color: #fff;
+    .theme-btn:hover {
+      opacity: 0.8;
     }
 
-    .tabs {
-      display: flex;
-      background: var(--header-light);
-    }
-
-    .tabs.dark {
-      background: var(--header-dark);
-    }
-
-    .tabs div {
-      flex: 1;
-      text-align: center;
-      padding: 12px 8px;
-      /* 减少左右内边距避免换行 */
-      cursor: pointer;
-      font-weight: 500;
-      transition: background .3s;
-      white-space: nowrap;
-      /* 禁止换行 */
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .tabs div.active {
-      background: var(--bg-light);
-      border-bottom: 3px solid #42a5f5;
-    }
-
-    .tabs.dark div.active {
-      background: var(--header-dark);
-    }
-
-    .card-header {
-      text-align: center;
-      background: var(--header-light);
-      padding: 12px;
-      font-size: 20px;
-      font-weight: 500;
-      transition: background .3s;
-    }
-
-    .card-header.dark {
-      background: var(--header-dark);
-    }
-
-    .card-body {
-      padding: 20px;
-      transition: background .3s;
-    }
-
-    .card-body.dark {
-      background: var(--bg-dark);
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: 500;
-    }
-
-    /* Removed duplicate rule */
-
-    /* 夜间模式下表单控件暗色背景 */
-    body.dark textarea,
-    body.dark select,
-    body.dark input {
-      background: #3a3a3c;
-      color: var(--txt-dark);
-      border: 1px solid #555;
-    }
-
-    body.dark select,
-    body.dark input {
-      background: #3a3a3c;
-      color: var(--txt-dark);
-      border: 1px solid #555;
-    }
-
-    textarea,
-    select,
-    input,
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      transition: background .3s, border .3s;
-    }
-
-    button {
-      background: var(--btn-light);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    body.dark button {
-      background: var(--btn-dark);
-    }
-
-    button:hover {
-      opacity: .9;
-    }
-
-    .disabled {
-      background: #eee;
-      cursor: not-allowed;
-    }
-
-    .storage {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .storage button {
-      flex: 1;
-    }
-
-    #qrCode {
-      margin-top: 20px;
-    }
-
-    .about-content {
-      font-size: 16px;
-      line-height: 1.5;
-    }
-
-    .about-content a {
-      color: #42a5f5;
-      text-decoration: none;
-    }
-
-    .about-content a:hover {
-      text-decoration: underline;
-    }
-
-    button {
-      background: var(--btn-light);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    button.enabled {
-      background: var(--btn-light);
-    }
-
-    button.disabled {
-      background: #eee;
-      cursor: not-allowed;
-    }
-
-    button:hover {
-      opacity: .9;
-    }
-
-    body.dark button.enabled {
-      background: var(--btn-dark);
-    }
-
-    body.dark button.disabled {
-      background: #444;
-    }
-
-    select {
-      appearance: none;
-      /* 移除默认样式 */
-      background: var(--btn-light);
-      color: var(--txt-light);
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background .3s, color .3s, border .3s;
-    }
-
-    body.dark select {
-      background: var(--btn-dark);
-      color: var(--txt-dark);
-      border: 1px solid #555;
-    }
-
-    select:hover {
-      border-color: #888;
-    }
-
-    select:focus {
-      outline: none;
-      border-color: #42a5f5;
-    }
-
-    /* 新增：使用次数计数在卡片下方 */
-    #usageCounter { 
-      text-align: right;
-      font-size: 18px;
-      margin-top: 10px;
-      margin-right: 10px;
-      font-weight: bold;
-    }
-
-    /* 新增：限制高级功能弹窗中文本框的宽度 */
-    #advancedModal input {
-      width: 80%;
-      max-width: 300px;
-    }
-
-    /* 修改全局控件样式，实现文本框、下拉、按钮宽度一致且较长 */
-    input,
-    textarea,
-    select,
-    button {
-      width: 100%;
-      box-sizing: border-box;
-      min-width: 300px;
-    }
-
-    /* 多行文本域允许垂直调整，不允许水平调整 */
-    textarea {
-      resize: vertical;
-    }
-
-    /* 单行输入控件不允许调整尺寸 */
-    input {
-      resize: none;
-    }
-
-    /* 保留高级弹窗容器宽度设置 */
-    #advancedModal {
-      width: 400px;
-    }
-
-    /* 恢复主题卡片控件宽度 */
-    .theme-card .theme-btn,
-    .theme-card .lang-select {
-      width: auto !important;
-      min-width: 0 !important;
-      box-sizing: content-box;
-    }
-
-    /* 新增：进度条样式 */
-    #progressContainer {
-      display: none;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: #ddd;
-      z-index: 1100;
-    }
-
-    #progressBar {
-      width: 0%;
-      height: 100%;
-      background: #42a5f5;
-      transition: width 0.1s;
-    }
   </style>
 </head>
 
 <body>
-  <div class="theme-card" id="themeCard">
-    <button class="theme-btn blue selected" onclick="setTheme('blue')" data-i18n="blue">🔵 浅蓝</button>
-    <button class="theme-btn pink" onclick="setTheme('pink')" data-i18n="pink">🌸 淡粉</button>
-    <button class="theme-btn" onclick="toggleDark()" data-i18n="dark">🌓 夜间</button>
-    <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
-      <option value="zh">中文</option>
-      <option value="en">English</option>
-    </select>
-  </div>
-  <div class="card" id="mainCard">
-    <div class="tabs" id="tabs">
-      <div id="tab-key" class="active" onclick="showSection('key')" data-i18n="tabKey">密钥管理</div>
-      <div id="tab-encrypt" onclick="showSection('encrypt')" data-i18n="tabEncrypt">加密</div>
-      <div id="tab-decrypt" onclick="showSection('decrypt')" data-i18n="tabDecrypt">解密</div>
-      <div id="tab-hash" onclick="showSection('hash')" data-i18n="tabHash">哈希与 HMAC</div>
-      <div id="tab-qr" onclick="showSection('qr')" data-i18n="tabQR">二维码生成</div>
-      <div id="tab-file" onclick="showSection('file')" data-i18n="tabFile">文件加密/解密</div>
-      <div id="tab-about" onclick="showSection('about')" data-i18n="tabAbout">关于</div>
-      <div id="tab-advanced" onclick="showSection('advanced')" data-i18n="tabAdvanced">高级功能</div>
-      <div id="tab-debug" onclick="showSection('debug')" data-i18n="tabDebug">调试功能</div>
-    </div>
-    <div class="card-header" id="header" data-i18n="tabKey">密钥管理</div>
-    <div class="card-body" id="body">
-      <!-- 密钥管理 -->
-      <div id="section-key" class="section active">
-        <label data-i18n="selectKeySize">选择 RSA 密钥长度：</label>
-        <select id="keySize" onchange="onKeyLen()">
-          <option value="" data-i18n="pleaseSelect">-- 请选择 --</option>
-          <option>512</option>
-          <option>1024</option>
-          <option>2048</option>
-        </select>
-        <button id="genBtn" class="disabled" onclick="genRSA()" disabled data-i18n="genKeyPair">生成密钥对</button>
-        <div class="storage">
-          <button onclick="saveRSA()" data-i18n="saveKey">💾 保存密钥</button>
-          <button onclick="loadRSA()" data-i18n="loadKey">📂 加载密钥</button>
-        </div>
-        <label data-i18n="publicKey">公钥(PEM)</label>
-        <textarea id="pubKey"></textarea>
-        <label data-i18n="privateKey">私钥(PEM)</label>
-        <textarea id="priKey"></textarea>
-      </div>
-      <!-- 加密 -->
-      <div id="section-encrypt" class="section">
-        <label data-i18n="algorithm">算法：</label>
-        <select id="algoEnc" onchange="togglePane('Enc')">
-          <option>RSA-OAEP</option>
-          <option>RSAES-PKCS1-V1_5</option>
-          <option>AES-CBC</option>
-        </select>
-        <div id="rsaEncPane">
-          <label data-i18n="plainText">待加密明文：</label>
-          <textarea id="textInEnc"></textarea>
-        </div>
-        <div id="aesEncPane" style="display:none">
-          <label data-i18n="password">密码：</label>
-          <input type="password" id="aesPwdEnc" />
-          <label data-i18n="plainText">待加密明文：</label>
-          <textarea id="textInAESEnc"></textarea>
-        </div>
-        <button onclick="doEncrypt()" data-i18n="encrypt">加密</button>
-        <label data-i18n="result">结果(Base64)：</label>
-        <textarea id="textOutEnc" readonly></textarea>
-      </div>
-      <!-- 解密 -->
-      <div id="section-decrypt" class="section">
-        <label data-i18n="algorithm">算法：</label>
-        <select id="algoDec" onchange="togglePane('Dec')">
-          <option>RSA-OAEP</option>
-          <option>RSAES-PKCS1-V1_5</option>
-          <option>AES-CBC</option>
-        </select>
-        <div id="rsaDecPane">
-          <label data-i18n="cipherText">待解密密文(Base64)：</label>
-          <textarea id="textInDec"></textarea>
-        </div>
-        <div id="aesDecPane" style="display:none">
-          <label data-i18n="password">密码：</label>
-          <input type="password" id="aesPwdDec" />
-          <label data-i18n="cipherText">待解密密文(Base64)：</label>
-          <textarea id="textInAESDec"></textarea>
-        </div>
-        <button onclick="doDecrypt()" data-i18n="decrypt">解密</button>
-        <label data-i18n="decryptedResult">解密结果：</label>
-        <textarea id="textOutDec" readonly></textarea>
-      </div>
-      <!-- 哈希与 HMAC -->
-      <div id="section-hash" class="section">
-        <label data-i18n="selectHashAlgorithm">选择算法：</label>
-        <select id="hashAlgo">
-          <option>SHA-256</option>
-          <option>SHA-512</option>
-          <option>MD5</option>
-        </select>
-        <label data-i18n="inputContent">输入内容：</label>
-        <textarea id="hashInput"></textarea>
-        <button onclick="generateHash()" data-i18n="generateHash">生成哈希</button>
-        <label data-i18n="hashResult">哈希结果：</label>
-        <textarea id="hashOutput" readonly></textarea>
-        <label data-i18n="selectHMACAlgorithm">选择 HMAC 算法：</label>
-        <select id="hmacAlgo">
-          <option>SHA-256</option>
-          <option>SHA-512</option>
-          <option>MD5</option>
-        </select>
-        <label data-i18n="key">密钥：</label>
-        <input type="text" id="hmacKey" />
-        <label data-i18n="inputContent">输入内容：</label>
-        <textarea id="hmacInput"></textarea>
-        <button onclick="generateHMAC()" data-i18n="generateHMAC">生成 HMAC</button>
-        <label data-i18n="hmacResult">HMAC 结果：</label>
-        <textarea id="hmacOutput" readonly></textarea>
-      </div>
-      <!-- 二维码生成 -->
-      <div id="section-qr" class="section">
-        <label data-i18n="qrInput">输入文本：</label>
-        <textarea id="qrText"></textarea>
-        <button onclick="generateQRCode()" data-i18n="generateQRCode">生成二维码</button>
-        <div id="qrCode"></div>
-      </div>
-      <!-- 文件 -->
-      <div id="section-file" class="section">
-        <label data-i18n="selectFile">选择文件：</label>
-        <input type="file" id="fileInput" />
-        <!-- 新增：选择加密算法 -->
-        <label data-i18n="selectEncryptionAlgorithm">选择加密算法：</label>
-        <select id="fileAlgo">
-        </select>
-        <div id="fileAesKeyContainer" style="display:none">
-          <label data-i18n="aesKey">AES 密钥：</label>
-          <input type="text" id="fileAesKey" />
-        </div>
-        <button id="encryptFileBtn" class="disabled" disabled data-i18n="encryptFile">加密文件</button>
-        <button id="decryptFileBtn" class="disabled" disabled data-i18n="decryptFile">解密文件</button>
-      </div>
-      <!-- 关于 -->
-      <div id="section-about" class="section">
-        <div class="about-content" data-i18n="aboutContent">
-          本工具支持多种加密解密算法，适用于学习和研究用途。
-        </div>
-      </div>
-      <!-- 高级功能 -->
-      <div id="section-advanced" class="section">
-        <button id="unlockBtn" onclick="showAdvancedModal()" data-i18n="unlockAdvanced">解锁高级功能</button>
-      </div>
-      <!-- 调试功能 -->
-      <div id="section-debug" class="section">
-        <h3 data-i18n="debugTitle">调试功能</h3>
-        <label data-i18n="debugProgressDuration">进度条持续时长 (ms)：</label>
-        <input type="number" id="debugProgressInput" value="50" />
-        <br />
-        <label data-i18n="debugAlgorithmOptions">启用加解密算法选项：</label>
-        <div>
-          <input type="checkbox" id="debugEnableRSA" checked />
-          <label for="debugEnableRSA" data-i18n="debugEnableRSA">RSA-OAEP</label>
-          <input type="checkbox" id="debugEnableRSAES" checked />
-          <label for="debugEnableRSAES" data-i18n="debugEnableRSAES">RSAES-PKCS1-V1_5</label>
-          <input type="checkbox" id="debugEnableAES" checked />
-          <label for="debugEnableAES" data-i18n="debugEnableAES">AES-CBC</label>
-        </div>
-        <button onclick="applyDebugSettings()" data-i18n="applySettings">保存设置</button>
-      </div>
-    </div>
-    <div id="usageCounter"></div>
-    <div id="progressContainer">
-      <div id="progressBar"></div>
-    </div>
-    <button id="resetBtn" onclick="resetAllData()" style="margin: 10px; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; background: #ff4d4f; color: #fff;">重置</button>
-  </div>
-  <!-- 新增：弹窗及遮罩层 -->
-  <div id="modalOverlay"
-    style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
-  </div>
-  <!-- 修改：增加宽度到400px -->
-  <div id="advancedModal"
-    style="display:none; position:fixed; left:50%; top:50%; transform: translate(-50%, -50%); width:400px; background:#fff; border-radius:10px; padding:20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index:1001;">
-    <span id="closeModal" style="cursor:pointer; position:absolute; right:10px; top:10px;">×</span>
-    <h3>解锁高级功能</h3>
-    <label>账户:</label>
-    <input type="text" id="accountInput" />
-    <label>密码:</label>
-    <input type="password" id="passwordInput" />
-    <button onclick="attemptUnlock()">登录</button>
+  <!-- 主题切换按钮 -->
+  <div class="theme-card">
+    <button class="theme-btn selected" onclick="setTheme('blue')">🔵 浅蓝</button>
+    <button class="theme-btn" onclick="setTheme('pink')">🌸 淡粉</button>
+    <button class="theme-btn" onclick="toggleDark()">🌓 夜间</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <!-- 卡片容器 -->
+  <div class="card-container">
+    <div class="card" onclick="window.location.href='https://toprise.github.io/EDT/Tools/EDcrypt.html'">
+      <h3>Encrypt and Decrypt Tools</h3>
+      <p>You can encrypt and decrypt all text.</p>
+    </div>
+  </div>
+
   <script>
-    window.addEventListener("DOMContentLoaded", function () {
-      const I18N = {
-        zh: {
-          tabKey: '密钥管理',
-          tabEncrypt: '加密',
-          tabDecrypt: '解密',
-          tabHash: '哈希与 HMAC',
-          tabQR: '二维码生成',
-          tabFile: '文件加密/解密',
-          tabAdvanced: '高级功能',
-          tabDebug: "调试功能",
-          debugTitle: "调试功能",
-          debugProgressDuration: "进度条持续时长 (ms)：",
-          debugAlgorithmOptions: "启用加解密算法选项：",
-          debugEnableRSA: "RSA-OAEP",
-          debugEnableRSAES: "RSAES-PKCS1-V1_5",
-          debugEnableAES: "AES-CBC",
-          applySettings: "保存设置",
-          dark: '夜间'
-        },
-        en: {
-          tabKey: 'Key Mgmt',
-          tabEncrypt: 'Encrypt',
-          tabDecrypt: 'Decrypt',
-          tabHash: 'Hash & HMAC',
-          tabQR: 'QR Code',
-          tabFile: 'File Enc/Dec',
-          tabAdvanced: 'Advanced',
-          tabDebug: "Debug",
-          debugTitle: "Debug Features",
-          debugProgressDuration: "Progress Bar Duration (ms):",
-          debugAlgorithmOptions: "Enable Encryption Algorithms:",
-          debugEnableRSA: "RSA-OAEP",
-          debugEnableRSAES: "RSAES-PKCS1-V1_5",
-          debugEnableAES: "AES-CBC",
-          applySettings: "Apply Settings",
-          dark: 'Dark'
-        }
+    // 设置主题功能
+    function setTheme(theme) {
+      // 设置相应的主题颜色
+      const themes = {
+        blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'],
+        pink: ['#fff0f5', '#ffd3e0', '#ffb0c9']
       };
-      let lang = 'zh', rsaPub, rsaPri;
-      // 修改：读取 localStorage 的调试设置
-      if(localStorage.getItem("debugProgressInterval")){
-        window.debugProgressInterval = parseInt(localStorage.getItem("debugProgressInterval"), 10);
-      } else {
-        window.debugProgressInterval = 50;
-      }
-      if(localStorage.getItem("debugAlgos")){
-        window.debugAlgos = JSON.parse(localStorage.getItem("debugAlgos"));
-      } else {
-        window.debugAlgos = { RSA: true, RSAES: true, AES: true };
-      }
-      // 如果高级功能未解锁，则隐藏调试功能栏目
-      if(getCookie("advancedUnlocked") !== "true"){
-        document.getElementById("tab-debug").style.display = "none";
-        document.getElementById("section-debug").style.display = "none";
-      }
-      function setLang(l) { lang = l; document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = I18N[lang][e.getAttribute('data-i18n')]; }); updateHeader(); }
-      function updateHeader() { const sec = document.querySelector('.tabs .active').id.replace('tab-', ''); document.getElementById('header').textContent = sec === 'about' ? '关于' : I18N[lang]['tab' + sec.charAt(0).toUpperCase() + sec.slice(1)]; }
-      function setTheme(c) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); document.querySelector(`.theme-btn.${c}`).classList.add('selected'); const m = { blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'], pink: ['#fff0f5', '#ffd3e0', '#ffb0c9'] }[c]; document.documentElement.style.setProperty('--bg-light', m[0]); document.documentElement.style.setProperty('--header-light', m[1]); document.documentElement.style.setProperty('--btn-light', m[2]); document.querySelector('.tabs').style.background = m[1]; document.querySelector('.card-header').style.background = m[1]; document.querySelectorAll('button:not(.theme-btn)').forEach(b => b.style.backgroundColor = m[2]); }
-      function toggleDark() { 
-        ['body', 'themeCard', 'mainCard', 'tabs', 'header'].forEach(id => document.getElementById(id)?.classList.toggle('dark'));
-      }
-      function showSection(sec) { ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about', 'advanced', 'debug'].forEach(s => { document.getElementById('section-' + s).classList.remove('active'); document.getElementById('tab-' + s)?.classList.remove('active'); }); document.getElementById('section-' + sec).classList.add('active'); document.getElementById('tab-' + sec)?.classList.add('active'); updateHeader(); }
-      function onKeyLen() {
-        const ok = !!document.getElementById('keySize').value;
-        const genBtn = document.getElementById('genBtn');
-        genBtn.disabled = !ok;
-        genBtn.classList.toggle('disabled', !ok);
-        genBtn.classList.toggle('enabled', ok);  // 添加启用状态
-      }
-      function genRSA() { const bits = +document.getElementById('keySize').value; const kp = forge.pki.rsa.generateKeyPair({ bits, e: 0x10001 }); rsaPub = kp.publicKey; rsaPri = kp.privateKey; document.getElementById('pubKey').value = forge.pki.publicKeyToPem(rsaPub); document.getElementById('priKey').value = forge.pki.privateKeyToPem(rsaPri); }
-      function saveRSA() { localStorage.setItem('rsa_pub', document.getElementById('pubKey').value); localStorage.setItem('rsa_pri', document.getElementById('priKey').value); alert('已保存密钥'); }
-      function loadRSA() { const sp = localStorage.getItem('rsa_pub'), si = localStorage.getItem('rsa_pri'), pub = document.getElementById('pubKey'), pri = document.getElementById('priKey'); if (sp || si) { if (sp) pub.value = sp; if (si) pri.value = si; return; } if (!pub.value.trim() && !pri.value.trim()) alert('无可用密钥'); }
-      function togglePane(m) { ['rsa', 'aes'].forEach(p => document.getElementById(p + m + 'Pane').style.display = 'none'); const algo = document.getElementById('algo' + m).value, pane = (algo.startsWith('RSA') ? 'rsa' : 'aes') + m + 'Pane'; document.getElementById(pane).style.display = 'block'; }
-      function doEncrypt() { let out, algo = document.getElementById('algoEnc').value; if (algo === 'AES-CBC') { const pwd = document.getElementById('aesPwdEnc').value, salt = forge.random.getBytesSync(16), iv = forge.random.getBytesSync(16), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), cipher = forge.cipher.createCipher('AES-CBC', key); cipher.start({ iv }); cipher.update(forge.util.createBuffer(document.getElementById('textInAESEnc').value, 'utf8')); cipher.finish(); const buf = forge.util.createBuffer(); buf.putBytes(salt); buf.putBytes(iv); buf.putBuffer(cipher.output); out = forge.util.encode64(buf.getBytes()); } else { loadRSA(); out = forge.util.encode64(rsaPub.encrypt(forge.util.encodeUtf8(document.getElementById('textInEnc').value), algo)); } document.getElementById('textOutEnc').value = out; }
-      function doDecrypt() { let out, algo = document.getElementById('algoDec').value; if (algo === 'AES-CBC') { try { const pwd = document.getElementById('aesPwdDec').value, data = forge.util.decode64(document.getElementById('textInAESDec').value), buf = forge.util.createBuffer(data), salt = buf.getBytes(16), iv = buf.getBytes(16), ct = buf.getBytes(buf.length()), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), dec = forge.cipher.createDecipher('AES-CBC', key); dec.start({ iv }); dec.update(forge.util.createBuffer(ct)); out = dec.finish() ? forge.util.decodeUtf8(dec.output.getBytes()) : '解密失败：密码错误或数据损坏'; } catch (e) { out = '解密失败：数据格式错误'; } } else { loadRSA(); out = forge.util.decodeUtf8(rsaPri.decrypt(forge.util.decode64(document.getElementById('textInDec').value), algo)); } document.getElementById('textOutDec').value = out; }
-      function generateHash() { const algo = document.getElementById('hashAlgo').value.toLowerCase().replace('-', ''), md = forge.md[algo].create(); md.update(document.getElementById('hashInput').value, 'utf8'); document.getElementById('hashOutput').value = md.digest().toHex(); }
-      function generateHMAC() {
-        const algo = document.getElementById('hmacAlgo').value.toLowerCase().replace('-', '');
-        const key = document.getElementById('hmacKey').value;
-        const hmac = forge.hmac.create();
-        hmac.start({ algorithm: algo, key: key }); // 修复这里的用法
-        hmac.update(document.getElementById('hmacInput').value, 'utf8');
-        document.getElementById('hmacOutput').value = hmac.digest().toHex();
-      }
-      function generateQRCode() {
-        const text = document.getElementById('qrText').value.trim();
-        const container = document.getElementById('qrCode');
-        container.innerHTML = ''; // 清空之前的二维码
-        if (!text) {
-          alert('请输入二维码文本');
-          return;
-        }
-        QRCode.toCanvas(container, text, { errorCorrectionLevel: 'H' }, (err) => {
-          if (err) {
-            console.error('二维码生成失败:', err); // 更详细的错误日志
-            alert('二维码生成失败，请检查输入内容');
-          }
-        });
-      }
-      const fileAlgo = document.getElementById('fileAlgo');
-      const fileAesKeyContainer = document.getElementById('fileAesKeyContainer');
-      fileAlgo.addEventListener('change', () => {
-        fileAesKeyContainer.style.display = fileAlgo.value === 'AES-CBC' ? 'block' : 'none';
+
+      const [bgLight, headerLight, btnLight] = themes[theme];
+
+      // 更新CSS变量
+      document.documentElement.style.setProperty('--bg-light', bgLight);
+      document.documentElement.style.setProperty('--header-light', headerLight);
+      document.documentElement.style.setProperty('--btn-light', btnLight);
+
+      // 更改按钮的选中状态
+      document.querySelectorAll('.theme-btn').forEach(button => {
+        button.classList.remove('selected');
       });
 
-      const fileInput = document.getElementById('fileInput');
-      const encryptFileBtn = document.getElementById('encryptFileBtn');
-      const decryptFileBtn = document.getElementById('decryptFileBtn');
+      document.querySelector(`.theme-btn.${theme}`).classList.add('selected');
+    }
 
-      fileInput.addEventListener('change', () => {
-        const hasFile = fileInput.files.length > 0;
-        encryptFileBtn.disabled = !hasFile;
-        decryptFileBtn.disabled = !hasFile;
-        encryptFileBtn.classList.toggle('enabled', hasFile);
-        encryptFileBtn.classList.toggle('disabled', !hasFile);
-        decryptFileBtn.classList.toggle('enabled', hasFile);
-        decryptFileBtn.classList.toggle('disabled', !hasFile);
+    // 切换夜间模式
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.toggle('dark');
       });
-
-      encryptFileBtn.addEventListener('click', encryptFile);
-      decryptFileBtn.addEventListener('click', decryptFile);
-
-      function encryptFile() {
-        const algo = fileAlgo.value;
-        const file = fileInput.files[0];
-        if (!file) { alert("请选择文件"); return; }
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const fileData = e.target.result;
-          let result = { filename: file.name, algo: algo };
-          if (algo === 'RSA-OAEP') {
-            loadRSA();
-            // 生成随机AES密钥与IV，并用RSA加密AES密钥
-            const key = forge.random.getBytesSync(16);
-            const iv = forge.random.getBytesSync(16);
-            const cipher = forge.cipher.createCipher('AES-CBC', key);
-            cipher.start({ iv: iv });
-            cipher.update(forge.util.createBuffer(fileData));
-            cipher.finish();
-            const encrypted = cipher.output.getBytes();
-            const encKey = rsaPub.encrypt(key, 'RSA-OAEP');
-            result.encKey = forge.util.encode64(encKey);
-            result.iv = forge.util.encode64(iv);
-            result.cipherText = forge.util.encode64(encrypted);
-          } else if (algo === 'AES-CBC') {
-            // 使用用户手动输入的AES密钥（取前16字符）
-            const rawKey = document.getElementById('fileAesKey').value;
-            if (rawKey.length < 16) { alert("请输入至少16字符的AES密钥"); return; }
-            const key = rawKey.substr(0, 16);
-            const iv = forge.random.getBytesSync(16);
-            const cipher = forge.cipher.createCipher('AES-CBC', key);
-            cipher.start({ iv: iv });
-            cipher.update(forge.util.createBuffer(fileData));
-            cipher.finish();
-            result.iv = forge.util.encode64(iv);
-            result.cipherText = forge.util.encode64(cipher.output.getBytes());
-          }
-          const jsonStr = JSON.stringify(result);
-          const blob = new Blob([jsonStr], { type: "application/json" });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = file.name + ".enc.json";
-          link.click();
-        };
-        // 对于加密文件，若选用AES则读二进制即可
-        reader.readAsBinaryString(file);
-      }
-
-      function decryptFile() {
-        const algo = fileAlgo.value;
-        const file = fileInput.files[0];
-        if (!file) { alert("请选择文件"); return; }
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          try {
-            const obj = JSON.parse(e.target.result);
-            // 根据加密算法分支处理
-            if (algo === 'RSA-OAEP') {
-              loadRSA();
-              const encKey = forge.util.decode64(obj.encKey);
-              const iv = forge.util.decode64(obj.iv);
-              const cipherText = forge.util.decode64(obj.cipherText);
-              const key = rsaPri.decrypt(encKey, 'RSA-OAEP');
-              const decipher = forge.cipher.createDecipher('AES-CBC', key);
-              decipher.start({ iv: iv });
-              decipher.update(forge.util.createBuffer(cipherText));
-              if (!decipher.finish()) {
-                alert("解密失败：密钥错误或数据损坏");
-                return;
-              }
-              var decryptedData = decipher.output.getBytes();
-            } else if (algo === 'AES-CBC') {
-              // 使用用户手动输入的AES密钥
-              const rawKey = document.getElementById('fileAesKey').value;
-              if (rawKey.length < 16) { alert("请输入至少16字符的AES密钥"); return; }
-              const key = rawKey.substr(0, 16);
-              const iv = forge.util.decode64(obj.iv);
-              const cipherText = forge.util.decode64(obj.cipherText);
-              const decipher = forge.cipher.createDecipher('AES-CBC', key);
-              decipher.start({ iv: iv });
-              decipher.update(forge.util.createBuffer(cipherText));
-              if (!decipher.finish()) {
-                alert("解密失败：密钥错误或数据损坏");
-                return;
-              }
-              var decryptedData = decipher.output.getBytes();
-            }
-            const blob = new Blob([decryptedData], { type: "application/octet-stream" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = obj.filename || "decrypted";
-            link.click();
-          } catch (e) {
-            alert("解密失败：文件格式错误");
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      // 新增：使用次数功能及 Cookie 操作
-      function getCookie(name) {
-        const parts = document.cookie.split("; ");
-        for (let part of parts) {
-          const [key, val] = part.split("=");
-          if (key === name) return decodeURIComponent(val);
-        }
-        return null;
-      }
-      function setCookie(name, value, days) {
-        const d = new Date();
-        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/; SameSite=Strict";
-      }
-      function removeCookie(name) {
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/; SameSite=Strict";
-      }
-      function resetAllData() {
-        // 清空 localStorage
-        localStorage.clear();
-        // 移除相关 cookies
-        removeCookie("advancedUnlocked");
-        removeCookie("usageRemaining");
-        alert("所有数据已重置，页面将刷新");
-        location.reload();
-      }
-      function updateUsageUI(val) {
-        const usageDiv = document.getElementById("usageCounter");
-        usageDiv.textContent = "剩余次数: " + val;
-      }
-      function checkUsage() {
-        if (getCookie("advancedUnlocked") === "true") return true;
-        let count = parseInt(getCookie("usageRemaining") || "10");
-        if (count <= 0) {
-          alert("使用次数已用完，请解锁高级功能！");
-          return false;
-        }
-        count--;
-        setCookie("usageRemaining", count, 7);
-        updateUsageUI(count);
-        return true;
-      }
-      // 初始化使用次数或显示无限制
-      if (getCookie("advancedUnlocked") === "true") {
-        updateUsageUI("无限制");
-      } else {
-        if (!getCookie("usageRemaining")) {
-          setCookie("usageRemaining", 10, 7);
-          updateUsageUI(10);
-        } else {
-          updateUsageUI(getCookie("usageRemaining"));
-        }
-      }
-
-      // 弹窗功能
-      function showAdvancedModal() {
-        document.getElementById("advancedModal").style.display = "block";
-        document.getElementById("modalOverlay").style.display = "block";
-      }
-      function closeAdvancedModal() {
-        document.getElementById("advancedModal").style.display = "none";
-        document.getElementById("modalOverlay").style.display = "none";
-      }
-      document.getElementById("closeModal").onclick = closeAdvancedModal;
-      function sha512(message) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(message);
-        return crypto.subtle.digest("SHA-512", data)
-          .then(buffer => {
-            const hashArray = Array.from(new Uint8Array(buffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return hashHex;
-          });
-      }
-
-      // 示例：计算 "hello world" 的 SHA-512 哈希
-      async function attemptUnlock() {
-        // 如果已经解锁，提示用户已解锁
-        if (
-          document.getElementById("advancedModal").style.display === "none" &&
-          document.getElementById("modalOverlay").style.display === "none"
-        ) {
-          alert("高级功能已解锁！");
-          closeAdvancedModal();
-          return;
-        }
-        const acc = document.getElementById("accountInput").value;
-        const pwd = document.getElementById("passwordInput").value;
-        const hashedPwd = await sha512(pwd); // 获取 SHA-512 哈希值
-        // 请将下面 "预设哈希值" 替换为你预先计算好的哈希结果
-        const presetHash = "2327c80dbd7faa5e223501ed4537bce095e368953c7fc5a55d1fc439e049ec64dae7e993110019812331a0e58a2edb8078e65f607d5eaf0422a0b015a3f20b2f";
-        if (acc === "admin" && hashedPwd === presetHash) {
-          setCookie("advancedUnlocked", "true", 7);
-          alert("高级功能解锁成功！");
-          closeAdvancedModal();
-          updateUsageUI("无限制");
-          document.getElementById("unlockBtn").textContent = "已解锁";
-        } else {
-          alert("账户或密码错误！");
-        }
-      }
-
-      // 修改部分功能操作前先检查使用次数
-      const _oldGenRSA = genRSA;
-      genRSA = function () {
-        if (!checkUsage()) return;
-        _oldGenRSA();
-      };
-      const _oldDoEncrypt = doEncrypt;
-      doEncrypt = function () {
-        const algo = document.getElementById("algoEnc").value;
-        if ((algo === "RSA-OAEP" && !window.debugAlgos.RSA) ||
-            (algo === "RSAES-PKCS1-V1_5" && !window.debugAlgos.RSAES) ||
-            (algo === "AES-CBC" && !window.debugAlgos.AES)) {
-          alert("该加密算法被调试功能禁用！");
-          return;
-        }
-        if (!checkUsage()) return;
-        showProgress(_oldDoEncrypt);
-      };
-      const _oldDoDecrypt = doDecrypt;
-      doDecrypt = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldDoDecrypt);
-      };
-      const _oldGenerateHash = generateHash;
-      generateHash = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldGenerateHash);
-      };
-      const _oldGenerateHMAC = generateHMAC;
-      generateHMAC = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldGenerateHMAC);
-      };
-      const _oldGenerateQRCode = generateQRCode;
-      generateQRCode = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldGenerateQRCode);
-      };
-      const _oldEncryptFile = encryptFile;
-      encryptFile = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldEncryptFile);
-      };
-      const _oldDecryptFile = decryptFile;
-      decryptFile = function () {
-        if (!checkUsage()) return;
-        showProgress(_oldDecryptFile);
-      };
-
-      // 修改进度条控制函数：进度条常驻显示并动画流畅
-      function showProgress(callback) {
-        const progressContainer = document.getElementById("progressContainer");
-        const progressBar = document.getElementById("progressBar");
-        progressContainer.style.display = "block";
-        progressBar.style.width = "0%";
-        let percent = 0;
-        const intervalId = setInterval(() => {
-          percent += 5;
-          progressBar.style.width = percent + "%";
-          if (percent >= 100) {
-            clearInterval(intervalId);
-            callback();
-          }
-        }, window.debugProgressInterval);
-      }
-
-      function applyDebugSettings() {
-        const newInterval = parseInt(document.getElementById("debugProgressInput").value, 10);
-        if (!isNaN(newInterval) && newInterval > 0) {
-          window.debugProgressInterval = newInterval;
-          localStorage.setItem("debugProgressInterval", newInterval);
-        }
-        window.debugAlgos.RSA = document.getElementById("debugEnableRSA").checked;
-        window.debugAlgos.RSAES = document.getElementById("debugEnableRSAES").checked;
-        window.debugAlgos.AES = document.getElementById("debugEnableAES").checked;
-        localStorage.setItem("debugAlgos", JSON.stringify(window.debugAlgos));
-        alert(I18N[lang].applySettings + " 已应用！");
-      }
-
-      // 暴露函数到全局作用域，供内联事件调用
-      Object.assign(window, {
-        setLang, setTheme, toggleDark, showSection, onKeyLen,
-        genRSA, saveRSA, loadRSA, togglePane,
-        doEncrypt, doDecrypt, generateHash, generateHMAC,
-        generateQRCode, encryptFile, decryptFile,
-        showAdvancedModal, closeAdvancedModal, attemptUnlock,
-        getCookie, setCookie, checkUsage, updateUsageUI,
-        applyDebugSettings, resetAllData
-      });
-    });
+    }
   </script>
 </body>
 
