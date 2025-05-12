@@ -587,17 +587,17 @@
           selectFile: "选择文件：",
           selectEncryptionAlgorithm: "选择加密算法：",
           manualAESKey: "手动输入AES密钥(至少16字符)：",
-          encryptFile: "加密文件",
-          decryptFile: "解密文件",
+          encryptFile: "Encrypt File",
+          decryptFile: "Decrypt File",
           author: "作者：toprise",
           version: "版本：Version 17.8.4",
-          github: "仓库链接",
-          unlockAdvanced: "解锁高级功能",
-          advancedTitle: "解锁高级功能",
-          account: "账户：",
-          password: "密码：",
-          login: "登录",
-          usageCounter: "剩余次数:"
+          github: "GitHub Link",
+          unlockAdvanced: "Unlock Advanced Features",
+          advancedTitle: "Unlock Advanced Features",
+          account: "Account:",
+          password: "Password:",
+          login: "Login",
+          usageCounter: "Remaining Uses:"
         },
         en: {
           title: "Encryption/Decryption Tool",
@@ -831,20 +831,39 @@
         reader.readAsText(file);
       }
 
-      // 新增：使用次数功能及 Cookie 操作
+      // 新增：安全存储Cookie（带签名），防止篡改
+      const COOKIE_SECRET = "hard-to-guess-secret"; // 请替换为更安全的密钥
+
+      function computeSignature(value) {
+        const md = forge.md.sha256.create();
+        md.update(value + COOKIE_SECRET);
+        return md.digest().toHex();
+      }
+      
+      function setCookie(name, value, days) {
+        const signedValue = value + "|" + computeSignature(value);
+        const d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = name + "=" + encodeURIComponent(signedValue) +
+          ";expires=" + d.toUTCString() + ";path=/";
+      }
+      
       function getCookie(name) {
         const parts = document.cookie.split("; ");
         for (let part of parts) {
           const [key, val] = part.split("=");
-          if (key === name) return decodeURIComponent(val);
+          if (key === name) {
+            const decoded = decodeURIComponent(val);
+            const segs = decoded.split("|");
+            if (segs.length !== 2) return null;
+            const [realValue, signature] = segs;
+            return computeSignature(realValue) === signature ? realValue : null;
+          }
         }
         return null;
       }
-      function setCookie(name, value, days) {
-        const d = new Date();
-        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + d.toUTCString() + ";path=/";
-      }
+
+      // 新增：使用次数功能及 Cookie 操作
       function checkUsage() {
         if (getCookie("advancedUnlocked") === "true") return true;
         let count = parseInt(getCookie("usageRemaining") || "10");
