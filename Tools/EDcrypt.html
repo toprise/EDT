@@ -7,6 +7,8 @@
   <title data-i18n="title">通用加密解密工具</title>
   <!-- 引入中文字体 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- 引入JSZip库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     /* 主题色变量定义 */
     :root {
@@ -364,6 +366,11 @@
       background: #42a5f5;
       transition: width 0.1s;
     }
+    
+    /* 新增：隐藏的文件上传输入框 */
+    #zipFileInput {
+      display: none;
+    }
   </style>
 </head>
 
@@ -401,8 +408,9 @@
         </select>
         <button id="genBtn" class="disabled" onclick="genRSA()" disabled data-i18n="genKeyPair">生成密钥对</button>
         <div class="storage">
-          <button onclick="saveRSA()" data-i18n="saveKey">💾 保存密钥</button>
-          <button onclick="loadRSA()" data-i18n="loadKey">📂 加载密钥</button>
+          <button onclick="saveRSA()" data-i18n="saveKey">💾 保存密钥(ZIP)</button>
+          <button onclick="loadRSA()" data-i18n="loadKey">📂 加载密钥(ZIP)</button>
+          <input type="file" id="zipFileInput" accept=".zip" />
         </div>
         <label data-i18n="publicKey">公钥(PEM)</label>
         <textarea id="pubKey"></textarea>
@@ -563,8 +571,8 @@
           selectKeySize: "选择 RSA 密钥长度：",
           pleaseSelect: "-- 请选择 --",
           genKeyPair: "生成密钥对",
-          saveKey: "💾 保存密钥",
-          loadKey: "📂 加载密钥",
+          saveKey: "💾 保存密钥(ZIP)",
+          loadKey: "📂 加载密钥(ZIP)",
           publicKey: "公钥(PEM)",
           privateKey: "私钥(PEM)",
           algorithm: "算法：",
@@ -615,8 +623,8 @@
           selectKeySize: "Select RSA Key Size:",
           pleaseSelect: "-- Please Select --",
           genKeyPair: "Generate Key Pair",
-          saveKey: "💾 Save Key",
-          loadKey: "📂 Load Key",
+          saveKey: "💾 Save Key (ZIP)",
+          loadKey: "📂 Load Key (ZIP)",
           publicKey: "Public Key (PEM)",
           privateKey: "Private Key (PEM)",
           algorithm: "Algorithm:",
@@ -682,8 +690,88 @@
         genBtn.classList.toggle('enabled', ok);  // 添加启用状态
       }
       function genRSA() { const bits = +document.getElementById('keySize').value; const kp = forge.pki.rsa.generateKeyPair({ bits, e: 0x10001 }); rsaPub = kp.publicKey; rsaPri = kp.privateKey; document.getElementById('pubKey').value = forge.pki.publicKeyToPem(rsaPub); document.getElementById('priKey').value = forge.pki.privateKeyToPem(rsaPri); }
-      function saveRSA() { localStorage.setItem('rsa_pub', document.getElementById('pubKey').value); localStorage.setItem('rsa_pri', document.getElementById('priKey').value); alert('已保存密钥'); }
-      function loadRSA() { const sp = localStorage.getItem('rsa_pub'), si = localStorage.getItem('rsa_pri'), pub = document.getElementById('pubKey'), pri = document.getElementById('priKey'); if (sp || si) { if (sp) pub.value = sp; if (si) pri.value = si; return; } if (!pub.value.trim() && !pri.value.trim()) alert('无可用密钥'); }
+      
+      // 修改保存密钥功能 - 下载ZIP包
+      function saveRSA() {
+        const pubKey = document.getElementById('pubKey').value;
+        const priKey = document.getElementById('priKey').value;
+        
+        if (!pubKey.trim() || !priKey.trim()) {
+          alert('请先生成密钥对');
+          return;
+        }
+        
+        const zip = new JSZip();
+        zip.file("public_key.pem", pubKey);
+        zip.file("private_key.pem", priKey);
+        
+        zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = 'rsa_keys.zip';
+            link.click();
+            URL.revokeObjectURL(link.href);
+            alert('密钥已保存为ZIP文件');
+          });
+      }
+      
+      // 修改加载密钥功能 - 上传ZIP包
+      function loadRSA() {
+        document.getElementById('zipFileInput').click();
+      }
+      
+      // 处理ZIP文件上传
+      document.getElementById('zipFileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.name.endsWith('.zip')) {
+          alert('请选择ZIP文件');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          JSZip.loadAsync(e.target.result)
+            .then(function(zip) {
+              const pubFile = zip.file("public_key.pem");
+              const priFile = zip.file("private_key.pem");
+              
+              if (!pubFile || !priFile) {
+                alert('ZIP文件中未找到公钥或私钥文件');
+                return;
+              }
+              
+              return Promise.all([
+                pubFile.async('text'),
+                priFile.async('text')
+              ]);
+            })
+            .then(function(contents) {
+              const [pubKey, priKey] = contents;
+              document.getElementById('pubKey').value = pubKey;
+              document.getElementById('priKey').value = priKey;
+              
+              // 尝试解析密钥
+              try {
+                rsaPub = forge.pki.publicKeyFromPem(pubKey);
+                rsaPri = forge.pki.privateKeyFromPem(priKey);
+                alert('密钥加载成功');
+              } catch (err) {
+                alert('密钥格式错误: ' + err.message);
+              }
+            })
+            .catch(function(err) {
+              alert('读取ZIP文件失败: ' + err.message);
+            });
+        };
+        reader.readAsArrayBuffer(file);
+        
+        // 清空文件输入，以便再次选择同一个文件
+        e.target.value = '';
+      });
+      
       function togglePane(m) { ['rsa', 'aes'].forEach(p => document.getElementById(p + m + 'Pane').style.display = 'none'); const algo = document.getElementById('algo' + m).value, pane = (algo.startsWith('RSA') ? 'rsa' : 'aes') + m + 'Pane'; document.getElementById(pane).style.display = 'block'; }
       function doEncrypt() { let out, algo = document.getElementById('algoEnc').value; if (algo === 'AES-CBC') { const pwd = document.getElementById('aesPwdEnc').value, salt = forge.random.getBytesSync(16), iv = forge.random.getBytesSync(16), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), cipher = forge.cipher.createCipher('AES-CBC', key); cipher.start({ iv }); cipher.update(forge.util.createBuffer(document.getElementById('textInAESEnc').value, 'utf8')); cipher.finish(); const buf = forge.util.createBuffer(); buf.putBytes(salt); buf.putBytes(iv); buf.putBuffer(cipher.output); out = forge.util.encode64(buf.getBytes()); } else { loadRSA(); out = forge.util.encode64(rsaPub.encrypt(forge.util.encodeUtf8(document.getElementById('textInEnc').value), algo)); } document.getElementById('textOutEnc').value = out; }
       function doDecrypt() { let out, algo = document.getElementById('algoDec').value; if (algo === 'AES-CBC') { try { const pwd = document.getElementById('aesPwdDec').value, data = forge.util.decode64(document.getElementById('textInAESDec').value), buf = forge.util.createBuffer(data), salt = buf.getBytes(16), iv = buf.getBytes(16), ct = buf.getBytes(buf.length()), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), dec = forge.cipher.createDecipher('AES-CBC', key); dec.start({ iv }); dec.update(forge.util.createBuffer(ct)); out = dec.finish() ? forge.util.decodeUtf8(dec.output.getBytes()) : '解密失败：密码错误或数据损坏'; } catch (e) { out = '解密失败：数据格式错误'; } } else { loadRSA(); out = forge.util.decodeUtf8(rsaPri.decrypt(forge.util.decode64(document.getElementById('textInDec').value), algo)); } document.getElementById('textOutDec').value = out; }
