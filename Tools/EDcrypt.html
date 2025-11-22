@@ -378,7 +378,7 @@
   <div class="theme-card" id="themeCard">
     <button class="theme-btn blue selected" onclick="setTheme('blue')" data-i18n="blue">🔵 浅蓝</button>
     <button class="theme-btn pink" onclick="setTheme('pink')" data-i18n="pink">🌸 淡粉</button>
-    <button class="theme-btn" onclick="toggleDark()" data-i18n="dark">🌓 夜间</button>
+    <button class="theme-btn" onclick="toggleDark()" data-i18n="dark">🌓 夜间模式</button>
     <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
       <option value="zh">中文</option>
       <option value="en">English</option>
@@ -518,7 +518,7 @@
         <div class="about-content">
           <p data-i18n="author">作者：toprise</p>
           <p data-i18n="version">版本：Version 17.8.4</p>
-          <p>GitHub：<a href="https://github.com/toprise/EDT" target="_blank" data-i18n="github">仓库链接</a></p>
+          <p data-i18n="github">GitHub：<a href="https://github.com/toprise/EDT" target="_blank">仓库链接</a></p>
         </div>
       </div>
       <!-- 高级功能 -->
@@ -559,7 +559,7 @@
           title: "通用加密解密工具",
           blue: "🔵 浅蓝",
           pink: "🌸 淡粉",
-          dark: "🌓 夜间",
+          dark: "🌓 夜间模式",
           tabKey: "密钥管理",
           tabEncrypt: "加密",
           tabDecrypt: "解密",
@@ -598,27 +598,42 @@
           encryptFile: "加密文件",
           decryptFile: "解密文件",
           author: "作者：toprise",
-          version: "版本：Version 9.8.4",
-          github: "GitHub 项目地址",
+          version: "版本：Version 17.8.4",
+          github: "GitHub：",
           unlockAdvanced: "解锁高级功能",
           advancedTitle: "解锁高级功能",
-          account: "账户",
-          password: "密码",
+          account: "账户：",
+          password: "密码：",
           login: "登录",
-          usageCounter: "剩余次数:"
+          usageCounter: "剩余次数：",
+          alertNoKeys: "请先生成密钥对",
+          alertSaveSuccess: "密钥已保存为ZIP文件",
+          alertLoadSuccess: "密钥加载成功",
+          alertInvalidZip: "ZIP文件中未找到公钥或私钥文件",
+          alertZipError: "读取ZIP文件失败：",
+          alertKeyError: "密钥格式错误：",
+          alertNoFile: "请选择文件",
+          alertInvalidKeyLength: "请输入至少16字符的AES密钥",
+          alertDecryptFailed: "解密失败：密钥错误或数据损坏",
+          alertFileFormatError: "解密失败：文件格式错误",
+          alertUsageExhausted: "使用次数已用完，请解锁高级功能！",
+          alertUnlockSuccess: "高级功能解锁成功！",
+          alertAccountError: "账户或密码错误！",
+          alertUnlocked: "高级功能已解锁！",
+          unlimited: "无限制"
         },
         en: {
           title: "Encryption/Decryption Tool",
           blue: "🔵 Light Blue",
           pink: "🌸 Light Pink",
-          dark: "🌓 Dark",
-          tabKey: "Key Mgmt",
-          tabEncrypt: "Encrypt",
-          tabDecrypt: "Decrypt",
+          dark: "🌓 Dark Mode",
+          tabKey: "Key Management",
+          tabEncrypt: "Encryption",
+          tabDecrypt: "Decryption",
           tabHash: "Hash & HMAC",
-          tabQR: "QR Code",
-          tabFile: "File Enc/Dec",
-          tabAdvanced: "Advanced",
+          tabQR: "QR Code Generator",
+          tabFile: "File Encryption/Decryption",
+          tabAdvanced: "Advanced Features",
           tabAbout: "About",
           selectKeySize: "Select RSA Key Size:",
           pleaseSelect: "-- Please Select --",
@@ -628,14 +643,14 @@
           publicKey: "Public Key (PEM)",
           privateKey: "Private Key (PEM)",
           algorithm: "Algorithm:",
-          plainText: "Plaintext:",
+          plainText: "Plaintext to Encrypt:",
           encrypt: "Encrypt",
           result: "Result (Base64):",
-          cipherText: "Ciphertext (Base64):",
+          cipherText: "Ciphertext to Decrypt (Base64):",
           decrypt: "Decrypt",
           decryptedResult: "Decrypted Result:",
           selectHashAlgorithm: "Select Algorithm:",
-          inputContent: "Input:",
+          inputContent: "Input Content:",
           generateHash: "Generate Hash",
           hashResult: "Hash Result:",
           selectHMACAlgorithm: "Select HMAC Algorithm:",
@@ -651,45 +666,97 @@
           decryptFile: "Decrypt File",
           author: "Author: toprise",
           version: "Version: 17.8.4",
-          github: "GitHub Link",
+          github: "GitHub: ",
           unlockAdvanced: "Unlock Advanced Features",
           advancedTitle: "Unlock Advanced Features",
           account: "Account:",
           password: "Password:",
           login: "Login",
-          usageCounter: "Remaining Uses:"
+          usageCounter: "Remaining Uses:",
+          alertNoKeys: "Please generate key pair first",
+          alertSaveSuccess: "Keys saved as ZIP file",
+          alertLoadSuccess: "Keys loaded successfully",
+          alertInvalidZip: "Public key or private key file not found in ZIP",
+          alertZipError: "Failed to read ZIP file: ",
+          alertKeyError: "Key format error: ",
+          alertNoFile: "Please select a file",
+          alertInvalidKeyLength: "Please enter at least 16 characters for AES key",
+          alertDecryptFailed: "Decryption failed: incorrect key or corrupted data",
+          alertFileFormatError: "Decryption failed: file format error",
+          alertUsageExhausted: "Usage count exhausted, please unlock advanced features!",
+          alertUnlockSuccess: "Advanced features unlocked successfully!",
+          alertAccountError: "Account or password incorrect!",
+          alertUnlocked: "Advanced features already unlocked!",
+          unlimited: "Unlimited"
         }
       };
       let lang = 'zh', rsaPub, rsaPri;
+      
       function setLang(l) { 
         lang = l; 
         document.querySelectorAll('[data-i18n]').forEach(e => { 
-          e.textContent = I18N[lang][e.getAttribute('data-i18n')]; 
+          const key = e.getAttribute('data-i18n');
+          e.textContent = I18N[lang][key]; 
         }); 
         updateHeader(); 
-        updateUsageUI(getCookie("advancedUnlocked") === "true" ? "无限制" : getCookie("usageRemaining") || 10);
+        updateUsageUI(getCookie("advancedUnlocked") === "true" ? I18N[lang].unlimited : getCookie("usageRemaining") || 10);
       }
+      
       function updateHeader() { 
         const sec = document.querySelector('.tabs .active').id.replace('tab-', '');
         document.getElementById('header').textContent = I18N[lang]['tab' + sec.charAt(0).toUpperCase() + sec.slice(1)];
       }
+      
       function updateUsageUI(val) {
         const usageDiv = document.getElementById("usageCounter");
         usageDiv.textContent = I18N[lang].usageCounter + " " + val;
       }
-      function setTheme(c) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); document.querySelector(`.theme-btn.${c}`).classList.add('selected'); const m = { blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'], pink: ['#fff0f5', '#ffd3e0', '#ffb0c9'] }[c]; document.documentElement.style.setProperty('--bg-light', m[0]); document.documentElement.style.setProperty('--header-light', m[1]); document.documentElement.style.setProperty('--btn-light', m[2]); document.querySelector('.tabs').style.background = m[1]; document.querySelector('.card-header').style.background = m[1]; document.querySelectorAll('button:not(.theme-btn)').forEach(b => b.style.backgroundColor = m[2]); }
+      
+      function setTheme(c) { 
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); 
+        document.querySelector(`.theme-btn.${c}`).classList.add('selected'); 
+        const m = { 
+          blue: ['#eaf6ff', '#cfe8fc', '#a5d8ff'], 
+          pink: ['#fff0f5', '#ffd3e0', '#ffb0c9'] 
+        }[c]; 
+        document.documentElement.style.setProperty('--bg-light', m[0]); 
+        document.documentElement.style.setProperty('--header-light', m[1]); 
+        document.documentElement.style.setProperty('--btn-light', m[2]); 
+        document.querySelector('.tabs').style.background = m[1]; 
+        document.querySelector('.card-header').style.background = m[1]; 
+        document.querySelectorAll('button:not(.theme-btn)').forEach(b => b.style.backgroundColor = m[2]); 
+      }
+      
       function toggleDark() { 
         ['body', 'themeCard', 'mainCard', 'tabs', 'header'].forEach(id => document.getElementById(id)?.classList.toggle('dark'));
       }
-      function showSection(sec) { ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about', 'advanced'].forEach(s => { document.getElementById('section-' + s).classList.remove('active'); document.getElementById('tab-' + s)?.classList.remove('active'); }); document.getElementById('section-' + sec).classList.add('active'); document.getElementById('tab-' + sec)?.classList.add('active'); updateHeader(); }
+      
+      function showSection(sec) { 
+        ['key', 'encrypt', 'decrypt', 'hash', 'qr', 'file', 'about', 'advanced'].forEach(s => { 
+          document.getElementById('section-' + s).classList.remove('active'); 
+          document.getElementById('tab-' + s)?.classList.remove('active'); 
+        }); 
+        document.getElementById('section-' + sec).classList.add('active'); 
+        document.getElementById('tab-' + sec)?.classList.add('active'); 
+        updateHeader(); 
+      }
+      
       function onKeyLen() {
         const ok = !!document.getElementById('keySize').value;
         const genBtn = document.getElementById('genBtn');
         genBtn.disabled = !ok;
         genBtn.classList.toggle('disabled', !ok);
-        genBtn.classList.toggle('enabled', ok);  // 添加启用状态
+        genBtn.classList.toggle('enabled', ok);
       }
-      function genRSA() { const bits = +document.getElementById('keySize').value; const kp = forge.pki.rsa.generateKeyPair({ bits, e: 0x10001 }); rsaPub = kp.publicKey; rsaPri = kp.privateKey; document.getElementById('pubKey').value = forge.pki.publicKeyToPem(rsaPub); document.getElementById('priKey').value = forge.pki.privateKeyToPem(rsaPri); }
+      
+      function genRSA() { 
+        const bits = +document.getElementById('keySize').value; 
+        const kp = forge.pki.rsa.generateKeyPair({ bits, e: 0x10001 }); 
+        rsaPub = kp.publicKey; 
+        rsaPri = kp.privateKey; 
+        document.getElementById('pubKey').value = forge.pki.publicKeyToPem(rsaPub); 
+        document.getElementById('priKey').value = forge.pki.privateKeyToPem(rsaPri); 
+      }
       
       // 修改保存密钥功能 - 下载ZIP包
       function saveRSA() {
@@ -697,7 +764,7 @@
         const priKey = document.getElementById('priKey').value;
         
         if (!pubKey.trim() || !priKey.trim()) {
-          alert('请先生成密钥对');
+          alert(I18N[lang].alertNoKeys);
           return;
         }
         
@@ -712,7 +779,7 @@
             link.download = 'rsa_keys.zip';
             link.click();
             URL.revokeObjectURL(link.href);
-            alert('密钥已保存为ZIP文件');
+            alert(I18N[lang].alertSaveSuccess);
           });
       }
       
@@ -727,7 +794,7 @@
         if (!file) return;
         
         if (!file.name.endsWith('.zip')) {
-          alert('请选择ZIP文件');
+          alert('Please select ZIP file');
           return;
         }
         
@@ -739,7 +806,7 @@
               const priFile = zip.file("private_key.pem");
               
               if (!pubFile || !priFile) {
-                alert('ZIP文件中未找到公钥或私钥文件');
+                alert(I18N[lang].alertInvalidZip);
                 return;
               }
               
@@ -757,13 +824,13 @@
               try {
                 rsaPub = forge.pki.publicKeyFromPem(pubKey);
                 rsaPri = forge.pki.privateKeyFromPem(priKey);
-                alert('密钥加载成功');
+                alert(I18N[lang].alertLoadSuccess);
               } catch (err) {
-                alert('密钥格式错误: ' + err.message);
+                alert(I18N[lang].alertKeyError + err.message);
               }
             })
             .catch(function(err) {
-              alert('读取ZIP文件失败: ' + err.message);
+              alert(I18N[lang].alertZipError + err.message);
             });
         };
         reader.readAsArrayBuffer(file);
@@ -772,33 +839,93 @@
         e.target.value = '';
       });
       
-      function togglePane(m) { ['rsa', 'aes'].forEach(p => document.getElementById(p + m + 'Pane').style.display = 'none'); const algo = document.getElementById('algo' + m).value, pane = (algo.startsWith('RSA') ? 'rsa' : 'aes') + m + 'Pane'; document.getElementById(pane).style.display = 'block'; }
-      function doEncrypt() { let out, algo = document.getElementById('algoEnc').value; if (algo === 'AES-CBC') { const pwd = document.getElementById('aesPwdEnc').value, salt = forge.random.getBytesSync(16), iv = forge.random.getBytesSync(16), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), cipher = forge.cipher.createCipher('AES-CBC', key); cipher.start({ iv }); cipher.update(forge.util.createBuffer(document.getElementById('textInAESEnc').value, 'utf8')); cipher.finish(); const buf = forge.util.createBuffer(); buf.putBytes(salt); buf.putBytes(iv); buf.putBuffer(cipher.output); out = forge.util.encode64(buf.getBytes()); } else { loadRSA(); out = forge.util.encode64(rsaPub.encrypt(forge.util.encodeUtf8(document.getElementById('textInEnc').value), algo)); } document.getElementById('textOutEnc').value = out; }
-      function doDecrypt() { let out, algo = document.getElementById('algoDec').value; if (algo === 'AES-CBC') { try { const pwd = document.getElementById('aesPwdDec').value, data = forge.util.decode64(document.getElementById('textInAESDec').value), buf = forge.util.createBuffer(data), salt = buf.getBytes(16), iv = buf.getBytes(16), ct = buf.getBytes(buf.length()), key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), dec = forge.cipher.createDecipher('AES-CBC', key); dec.start({ iv }); dec.update(forge.util.createBuffer(ct)); out = dec.finish() ? forge.util.decodeUtf8(dec.output.getBytes()) : '解密失败：密码错误或数据损坏'; } catch (e) { out = '解密失败：数据格式错误'; } } else { loadRSA(); out = forge.util.decodeUtf8(rsaPri.decrypt(forge.util.decode64(document.getElementById('textInDec').value), algo)); } document.getElementById('textOutDec').value = out; }
-      function generateHash() { const algo = document.getElementById('hashAlgo').value.toLowerCase().replace('-', ''), md = forge.md[algo].create(); md.update(document.getElementById('hashInput').value, 'utf8'); document.getElementById('hashOutput').value = md.digest().toHex(); }
+      function togglePane(m) { 
+        ['rsa', 'aes'].forEach(p => document.getElementById(p + m + 'Pane').style.display = 'none'); 
+        const algo = document.getElementById('algo' + m).value, 
+              pane = (algo.startsWith('RSA') ? 'rsa' : 'aes') + m + 'Pane'; 
+        document.getElementById(pane).style.display = 'block'; 
+      }
+      
+      function doEncrypt() { 
+        let out, algo = document.getElementById('algoEnc').value; 
+        if (algo === 'AES-CBC') { 
+          const pwd = document.getElementById('aesPwdEnc').value, 
+                salt = forge.random.getBytesSync(16), 
+                iv = forge.random.getBytesSync(16), 
+                key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), 
+                cipher = forge.cipher.createCipher('AES-CBC', key); 
+          cipher.start({ iv }); 
+          cipher.update(forge.util.createBuffer(document.getElementById('textInAESEnc').value, 'utf8')); 
+          cipher.finish(); 
+          const buf = forge.util.createBuffer(); 
+          buf.putBytes(salt); 
+          buf.putBytes(iv); 
+          buf.putBuffer(cipher.output); 
+          out = forge.util.encode64(buf.getBytes()); 
+        } else { 
+          loadRSA(); 
+          out = forge.util.encode64(rsaPub.encrypt(forge.util.encodeUtf8(document.getElementById('textInEnc').value), algo)); 
+        } 
+        document.getElementById('textOutEnc').value = out; 
+      }
+      
+      function doDecrypt() { 
+        let out, algo = document.getElementById('algoDec').value; 
+        if (algo === 'AES-CBC') { 
+          try { 
+            const pwd = document.getElementById('aesPwdDec').value, 
+                  data = forge.util.decode64(document.getElementById('textInAESDec').value), 
+                  buf = forge.util.createBuffer(data), 
+                  salt = buf.getBytes(16), 
+                  iv = buf.getBytes(16), 
+                  ct = buf.getBytes(buf.length()), 
+                  key = forge.pkcs5.pbkdf2(pwd, salt, 1000, 16), 
+                  dec = forge.cipher.createDecipher('AES-CBC', key); 
+            dec.start({ iv }); 
+            dec.update(forge.util.createBuffer(ct)); 
+            out = dec.finish() ? forge.util.decodeUtf8(dec.output.getBytes()) : I18N[lang].alertDecryptFailed; 
+          } catch (e) { 
+            out = I18N[lang].alertFileFormatError; 
+          } 
+        } else { 
+          loadRSA(); 
+          out = forge.util.decodeUtf8(rsaPri.decrypt(forge.util.decode64(document.getElementById('textInDec').value), algo)); 
+        } 
+        document.getElementById('textOutDec').value = out; 
+      }
+      
+      function generateHash() { 
+        const algo = document.getElementById('hashAlgo').value.toLowerCase().replace('-', ''), 
+              md = forge.md[algo].create(); 
+        md.update(document.getElementById('hashInput').value, 'utf8'); 
+        document.getElementById('hashOutput').value = md.digest().toHex(); 
+      }
+      
       function generateHMAC() {
         const algo = document.getElementById('hmacAlgo').value.toLowerCase().replace('-', '');
         const key = document.getElementById('hmacKey').value;
         const hmac = forge.hmac.create();
-        hmac.start({ algorithm: algo, key: key }); // 修复这里的用法
+        hmac.start({ algorithm: algo, key: key });
         hmac.update(document.getElementById('hmacInput').value, 'utf8');
         document.getElementById('hmacOutput').value = hmac.digest().toHex();
       }
+      
       function generateQRCode() {
         const text = document.getElementById('qrText').value.trim();
         const container = document.getElementById('qrCode');
-        container.innerHTML = ''; // 清空之前的二维码
+        container.innerHTML = '';
         if (!text) {
-          alert('请输入二维码文本');
+          alert('Please enter QR code text');
           return;
         }
         QRCode.toCanvas(container, text, { errorCorrectionLevel: 'H' }, (err) => {
           if (err) {
-            console.error('二维码生成失败:', err); // 更详细的错误日志
-            alert('二维码生成失败，请检查输入内容');
+            console.error('QR code generation failed:', err);
+            alert('QR code generation failed, please check input content');
           }
         });
       }
+      
       const fileAlgo = document.getElementById('fileAlgo');
       const fileAesKeyContainer = document.getElementById('fileAesKeyContainer');
       fileAlgo.addEventListener('change', () => {
@@ -825,14 +952,13 @@
       function encryptFile() {
         const algo = fileAlgo.value;
         const file = fileInput.files[0];
-        if (!file) { alert("请选择文件"); return; }
+        if (!file) { alert(I18N[lang].alertNoFile); return; }
         const reader = new FileReader();
         reader.onload = function (e) {
           const fileData = e.target.result;
           let result = { filename: file.name, algo: algo };
           if (algo === 'RSA-OAEP') {
             loadRSA();
-            // 生成随机AES密钥与IV，并用RSA加密AES密钥
             const key = forge.random.getBytesSync(16);
             const iv = forge.random.getBytesSync(16);
             const cipher = forge.cipher.createCipher('AES-CBC', key);
@@ -845,9 +971,8 @@
             result.iv = forge.util.encode64(iv);
             result.cipherText = forge.util.encode64(encrypted);
           } else if (algo === 'AES-CBC') {
-            // 使用用户手动输入的AES密钥（取前16字符）
             const rawKey = document.getElementById('fileAesKey').value;
-            if (rawKey.length < 16) { alert("请输入至少16字符的AES密钥"); return; }
+            if (rawKey.length < 16) { alert(I18N[lang].alertInvalidKeyLength); return; }
             const key = rawKey.substr(0, 16);
             const iv = forge.random.getBytesSync(16);
             const cipher = forge.cipher.createCipher('AES-CBC', key);
@@ -864,19 +989,17 @@
           link.download = file.name + ".enc.json";
           link.click();
         };
-        // 对于加密文件，若选用AES则读二进制即可
         reader.readAsBinaryString(file);
       }
 
       function decryptFile() {
         const algo = fileAlgo.value;
         const file = fileInput.files[0];
-        if (!file) { alert("请选择文件"); return; }
+        if (!file) { alert(I18N[lang].alertNoFile); return; }
         const reader = new FileReader();
         reader.onload = function (e) {
           try {
             const obj = JSON.parse(e.target.result);
-            // 根据加密算法分支处理
             if (algo === 'RSA-OAEP') {
               loadRSA();
               const encKey = forge.util.decode64(obj.encKey);
@@ -887,14 +1010,13 @@
               decipher.start({ iv: iv });
               decipher.update(forge.util.createBuffer(cipherText));
               if (!decipher.finish()) {
-                alert("解密失败：密钥错误或数据损坏");
+                alert(I18N[lang].alertDecryptFailed);
                 return;
               }
               var decryptedData = decipher.output.getBytes();
             } else if (algo === 'AES-CBC') {
-              // 使用用户手动输入的AES密钥
               const rawKey = document.getElementById('fileAesKey').value;
-              if (rawKey.length < 16) { alert("请输入至少16字符的AES密钥"); return; }
+              if (rawKey.length < 16) { alert(I18N[lang].alertInvalidKeyLength); return; }
               const key = rawKey.substr(0, 16);
               const iv = forge.util.decode64(obj.iv);
               const cipherText = forge.util.decode64(obj.cipherText);
@@ -902,7 +1024,7 @@
               decipher.start({ iv: iv });
               decipher.update(forge.util.createBuffer(cipherText));
               if (!decipher.finish()) {
-                alert("解密失败：密钥错误或数据损坏");
+                alert(I18N[lang].alertDecryptFailed);
                 return;
               }
               var decryptedData = decipher.output.getBytes();
@@ -913,14 +1035,14 @@
             link.download = obj.filename || "decrypted";
             link.click();
           } catch (e) {
-            alert("解密失败：文件格式错误");
+            alert(I18N[lang].alertFileFormatError);
           }
         };
         reader.readAsText(file);
       }
 
-      // 修改：安全存储Cookie（带签名）相关代码保持不变
-      const COOKIE_SECRET = "hard-to-guess-secret"; // 请替换为更安全的密钥
+      // Cookie相关功能
+      const COOKIE_SECRET = "hard-to-guess-secret";
       function computeSignature(value) {
         const md = forge.md.sha256.create();
         md.update(value + COOKIE_SECRET);
@@ -948,7 +1070,6 @@
         return null;
       }
       
-      // 新增：通过 localStorage 保持使用次数，防止 Cookie 被清除后重置
       function initializeUsage() {
         let usage = getCookie("usageRemaining");
         if (usage === null) {
@@ -967,10 +1088,9 @@
       
       function checkUsage() {
         if (getCookie("advancedUnlocked") === "true") return true;
-        // 优先从cookie，如无则取localStorage
         let count = parseInt(getCookie("usageRemaining") || localStorage.getItem("usageRemaining") || "10");
         if (count <= 0) {
-          alert("使用次数已用完，请解锁高级功能！");
+          alert(I18N[lang].alertUsageExhausted);
           return false;
         }
         count--;
@@ -980,7 +1100,6 @@
         return true;
       }
       
-      // 初始化使用次数（优先使用localStorage保存的值）
       initializeUsage();
 
       // 弹窗功能
@@ -1004,34 +1123,28 @@
           });
       }
 
-      // 示例：计算 "hello world" 的 SHA-512 哈希
       async function attemptUnlock() {
-        // 如果已经解锁，提示用户已解锁
-        if (
-          document.getElementById("advancedModal").style.display === "none" &&
-          document.getElementById("modalOverlay").style.display === "none"
-        ) {
-          alert("高级功能已解锁！");
+        if (document.getElementById("advancedModal").style.display === "none") {
+          alert(I18N[lang].alertUnlocked);
           closeAdvancedModal();
           return;
         }
         const acc = document.getElementById("accountInput").value;
         const pwd = document.getElementById("passwordInput").value;
-        const hashedPwd = await sha512(pwd); // 获取 SHA-512 哈希值
-        // 请将下面 "预设哈希值" 替换为你预先计算好的哈希结果
+        const hashedPwd = await sha512(pwd);
         const presetHash = "ab6f5073259a16b0863f0b0a5b907956679f69970e3dd6ab80444c0840aa6e385c0ebe0cf26cc26fc7d4c37acdbbd1c933eb19bb3e48779280f212ee56b02659";
         if (acc === "admin" && hashedPwd === presetHash) {
           setCookie("advancedUnlocked", "true", 7);
-          alert("高级功能解锁成功！");
+          alert(I18N[lang].alertUnlockSuccess);
           closeAdvancedModal();
-          updateUsageUI("无限制");
-          document.getElementById("unlockBtn").textContent = "已解锁";
+          updateUsageUI(I18N[lang].unlimited);
+          document.getElementById("unlockBtn").textContent = I18N[lang].unlockAdvanced + " ✓";
         } else {
-          alert("账户或密码错误！");
+          alert(I18N[lang].alertAccountError);
         }
       }
 
-      // 修改部分功能操作前先检查使用次数
+      // 包装功能以检查使用次数
       const _oldGenRSA = genRSA;
       genRSA = function () {
         if (!checkUsage()) return;
@@ -1073,7 +1186,6 @@
         showProgress(_oldDecryptFile);
       };
 
-      // 修改进度条控制函数：进度条常驻显示并动画流畅
       function showProgress(callback) {
         const progressContainer = document.getElementById("progressContainer");
         const progressBar = document.getElementById("progressBar");
@@ -1086,12 +1198,11 @@
           if (percent >= 100) {
             clearInterval(intervalId);
             callback();
-            // 保持进度条显示在100%
           }
         }, 50);
       }
 
-      // 暴露函数到全局作用域，供内联事件调用
+      // 暴露函数到全局作用域
       Object.assign(window, {
         setLang, setTheme, toggleDark, showSection, onKeyLen,
         genRSA, saveRSA, loadRSA, togglePane,
